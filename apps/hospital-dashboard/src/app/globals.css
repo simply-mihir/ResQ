@@ -3,25 +3,70 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* ─── Color Palette ─── */
+  
+  /* Primary — trust, medical, calm */
+  --color-primary-50:  #EEF2FF;
+  --color-primary-100: #E0E7FF;
+  --color-primary-200: #C7D2FE;
+  --color-primary-300: #A5B4FC;
+  --color-primary-400: #818CF8;
+  --color-primary-500: #6366F1;   /* Primary brand */
+  --color-primary-600: #4F46E5;
+  --color-primary-700: #4338CA;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Emergency — red spectrum */
+  --color-emergency-400: #F87171;
+  --color-emergency-500: #EF4444;  /* Emergency trigger */
+  --color-emergency-600: #DC2626;
+  --color-emergency-700: #B91C1C;
+
+  /* Severity tiers */
+  --color-severity-stable:   #22C55E;  /* Green */
+  --color-severity-serious:  #F59E0B;  /* Amber */
+  --color-severity-critical: #EF4444;  /* Red */
+
+  /* Status */
+  --color-status-verified:     #22C55E;
+  --color-status-ai-extracted: #6B7280;
+  --color-status-low-confidence: #F59E0B;
+  --color-status-processing:   #3B82F6;
+
+  /* Neutrals */
+  --color-neutral-50:  #F9FAFB;
+  --color-neutral-100: #F3F4F6;
+  --color-neutral-200: #E5E7EB;
+  --color-neutral-300: #D1D5DB;
+  --color-neutral-400: #9CA3AF;
+  --color-neutral-500: #6B7280;
+  --color-neutral-600: #4B5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1F2937;
+  --color-neutral-900: #111827;
+
+  /* ─── Glass Effect System ─── */
+  --glass-bg-1: rgba(255, 255, 255, 0.60);
+  --glass-blur-1: 12px;
+  --glass-border-1: 1px solid rgba(255, 255, 255, 0.30);
+  --glass-shadow-1: 0 4px 30px rgba(0, 0, 0, 0.05);
+  
+  --glass-bg-2: rgba(255, 255, 255, 0.70);
+  --glass-blur-2: 16px;
+  --glass-border-2: 1px solid rgba(255, 255, 255, 0.40);
+  --glass-shadow-2: 0 8px 32px rgba(0, 0, 0, 0.08);
+  
+  --glass-bg-3: rgba(255, 255, 255, 0.85);
+  --glass-blur-3: 24px;
+  --glass-border-3: 1px solid rgba(255, 255, 255, 0.50);
+  --glass-shadow-3: 0 12px 48px rgba(0, 0, 0, 0.12);
+  
+  --glass-bg-dark: rgba(17, 24, 39, 0.75);
+  --glass-blur-dark: 20px;
+  --glass-border-dark: 1px solid rgba(255, 255, 255, 0.10);
+  --glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.30);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  color: var(--color-neutral-900);
+  background: var(--color-neutral-50);
 }

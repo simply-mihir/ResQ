@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Get } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 function generateCaseNumber() {
@@ -53,5 +53,22 @@ export class EmergencyController {
     });
 
     return { caseId: updatedCase.id, status: updatedCase.status, severityTier };
+  }
+
+  @Get('active')
+  async getActiveEmergencies() {
+    const cases = await this.prisma.emergencyCase.findMany({
+      where: {
+        status: {
+          in: ['TRIAGE_COMPLETE', 'DISPATCHED'],
+        },
+      },
+      orderBy: [
+        { severityScore: 'desc' },
+        { createdAt: 'desc' },
+      ],
+    });
+
+    return cases;
   }
 }
