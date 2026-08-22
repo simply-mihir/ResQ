@@ -1,0 +1,80 @@
+# logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# pids
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# lib-cov
+lib-cov
+
+# coverage
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# grunt-html-validation
+.grunt
+
+# bower-npm-install
+.bower-registry
+
+# lockfiles
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# build output
+dist
+.next
+out
+build
+
+# dependencies
+node_modules
+jspm_packages
+
+# typescript
+*.tsbuildinfo
+
+# next.js
+.next/
+out/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# vercel
+.vercel
+
+# turbo
+.turbo
+
+# prisma
+/generated/prisma

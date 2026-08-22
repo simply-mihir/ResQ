@@ -1,0 +1,19 @@
+{
+  "name": "health-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint"
+  },
+  "dependencies": {
+    "turbo": "latest"
+  },
+  "packageManager": "npm@10.0.0"
+}

@@ -1,0 +1,314 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+// ─── ENUMS ───
+
+enum UserRole {
+  BYSTANDER
+  PATIENT
+  AMBULANCE
+  HOSPITAL_STAFF
+  DOCTOR
+  DIAGNOSTIC_STAFF
+  ADMIN
+}
+
+enum CaseStatus {
+  TRIGGERED
+  TRIAGE_COMPLETE
+  DISPATCHED
+  EN_ROUTE_TO_PATIENT
+  AT_PATIENT
+  EN_ROUTE_TO_HOSPITAL
+  ARRIVED
+  CLOSED
+}
+
+enum SeverityTier {
+  STABLE
+  SERIOUS
+  CRITICAL
+}
+
+enum AmbulanceStatus {
+  AVAILABLE
+  DISPATCHED
+  EN_ROUTE
+  BUSY
+  OFFLINE
+}
+
+enum RecordStatus {
+  PROCESSING
+  AI_EXTRACTED
+  DOCTOR_REVIEWED
+  VERIFIED
+  REJECTED
+}
+
+enum FollowUpStatus {
+  RECOMMENDED
+  BOOKED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationChannel {
+  SMS
+  WHATSAPP
+  PUSH
+  EMAIL
+}
+
+// ─── MODELS ───
+
+model User {
+  id            String    @id @default(uuid())
+  phone         String?   @unique
+  email         String?   @unique
+  name          String?
+  role          UserRole
+  verified      Boolean   @default(false)
+  orgId         String?   @map("org_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  emergencyProfile     EmergencyProfile?
+  triggeredCases       EmergencyCase[]       @relation("TriggeredBy")
+  reviewedRecords      MedicalRecordEntry[]  @relation("ReviewedBy")
+  recommendations      FollowUpRecommendation[] @relation("RecommendedBy")
+  auditLogs            AuditLog[]
+
+  @@map("users")
+}
+
+model EmergencyProfile {
+  id                      String   @id @default(uuid())
+  userId                  String?  @unique @map("user_id")
+  bloodGroup              String?  @map("blood_group")
+  allergies               String[] @default([])
+  chronicConditions       String[] @default([]) @map("chronic_conditions")
+  currentMedications      String[] @default([]) @map("current_medications")
+  emergencyContactName    String?  @map("emergency_contact_name")
+  emergencyContactPhone   String?  @map("emergency_contact_phone")
+  insuranceProvider       String?  @map("insurance_provider")
+  insurancePolicyNumber   String?  @map("insurance_policy_number")
+  qrToken                 String   @unique @default(uuid()) @map("qr_token")
+  consentGivenAt          DateTime? @map("consent_given_at")
+  consentVersion          String?   @map("consent_version")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user                    User?    @relation(fields: [userId], references: [id])
+  cases                   EmergencyCase[]
+
+  @@map("emergency_profiles")
+}
+
+model EmergencyCase {
+  id                    String      @id @default(uuid())
+  caseNumber            String      @unique @map("case_number") // Human-readable: HC-2024-00001
+  status                CaseStatus  @default(TRIGGERED)
+  
+  // Patient info
+  patientId             String?     @map("patient_id")
+  emergencyProfileId    String?     @map("emergency_profile_id")
+  triggeredByUserId     String?     @map("triggered_by_user_id")
+  
+  // Location (stored as separate fields; PostGIS point computed in raw SQL)
+  locationLat           Float       @map("location_lat")
+  locationLng           Float       @map("location_lng")
+  locationAccuracy      Float?      @map("location_accuracy") // meters
+  locationAddress       String?     @map("location_address")
+  
+  // Triage
+  triageData            Json?       @map("triage_data")
+  // { conscious: bool|null, breathing: bool|null, bleeding: bool, scenario: string, notes: string }
+  severityTier          SeverityTier? @map("severity_tier")
+  severityScore         Int?        @map("severity_score")
+  
+  // Dispatch & matching
+  assignedHospitalId    String?     @map("assigned_hospital_id")
+  assignedAmbulanceId   String?     @map("assigned_ambulance_id")
+  hospitalMatchScore    Float?      @map("hospital_match_score")
+  hospitalMatchBreakdown Json?      @map("hospital_match_breakdown")
+  
+  // Timestamps
+  createdAt             DateTime    @default(now()) @map("created_at")
+  dispatchedAt          DateTime?   @map("dispatched_at")
+  hospitalAlertedAt     DateTime?   @map("hospital_alerted_at")
+  hospitalAcknowledgedAt DateTime?  @map("hospital_acknowledged_at")
+  arrivedAt             DateTime?   @map("arrived_at")
+  closedAt              DateTime?   @map("closed_at")
+  etaMinutes            Int?        @map("eta_minutes")
+  
+  // Family notification
+  familyToken           String?     @unique @map("family_token")
+  familyTokenExpiresAt  DateTime?   @map("family_token_expires_at")
+  
+  // Relations
+  emergencyProfile      EmergencyProfile? @relation(fields: [emergencyProfileId], references: [id])
+  triggeredBy           User?        @relation("TriggeredBy", fields: [triggeredByUserId], references: [id])
+  assignedHospital      Hospital?    @relation(fields: [assignedHospitalId], references: [id])
+  assignedAmbulance     Ambulance?   @relation(fields: [assignedAmbulanceId], references: [id])
+  notifications         Notification[]
+  statusHistory         CaseStatusHistory[]
+  followUps             FollowUpRecommendation[]
+
+  @@map("emergency_cases")
+}
+
+model CaseStatusHistory {
+  id          String     @id @default(uuid())
+  caseId      String     @map("case_id")
+  fromStatus  CaseStatus @map("from_status")
+  toStatus    CaseStatus @map("to_status")
+  changedAt   DateTime   @default(now()) @map("changed_at")
+  changedBy   String?    @map("changed_by") // user_id or "system"
+  notes       String?
+
+  case        EmergencyCase @relation(fields: [caseId], references: [id])
+
+  @@map("case_status_history")
+}
+
+model Hospital {
+  id                String    @id @default(uuid())
+  name              String
+  locationLat       Float     @map("location_lat")
+  locationLng       Float     @map("location_lng")
+  address           String?
+  phone             String?
+  specialties       String[]  @default([])
+  traumaCapable     Boolean   @default(false) @map("trauma_capable")
+  bedCapacityTotal  Int       @map("bed_capacity_total")
+  bedCapacityFree   Int       @map("bed_capacity_free")
+  bedUpdatedAt      DateTime? @map("bed_updated_at")
+  verifiedPartner   Boolean   @default(false) @map("verified_partner")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  cases             EmergencyCase[]
+
+  @@map("hospitals")
+}
+
+model Ambulance {
+  id              String          @id @default(uuid())
+  vehicleNumber   String          @unique @map("vehicle_number")
+  operatorOrgId   String?         @map("operator_org_id")
+  status          AmbulanceStatus @default(OFFLINE)
+  currentLat      Float?          @map("current_lat")
+  currentLng      Float?          @map("current_lng")
+  locationUpdatedAt DateTime?     @map("location_updated_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  cases           EmergencyCase[]
+
+  @@map("ambulances")
+}
+
+model MedicalRecordEntry {
+  id                    String       @id @default(uuid())
+  patientId             String       @map("patient_id")
+  sourceDocumentUrl     String?      @map("source_document_url")
+  documentType          String?      @map("document_type") // prescription, lab_report, discharge_summary, etc.
+  extractedData         Json?        @map("extracted_data")
+  extractionConfidence  Float?       @map("extraction_confidence") // 0.0 to 1.0
+  lowConfidenceFields   String[]     @default([]) @map("low_confidence_fields")
+  status                RecordStatus @default(PROCESSING)
+  reviewedByDoctorId    String?      @map("reviewed_by_doctor_id")
+  reviewedAt            DateTime?    @map("reviewed_at")
+  editHistory           Json?        @map("edit_history") // Array of { field, old_value, new_value, edited_by, timestamp }
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  reviewedBy            User?        @relation("ReviewedBy", fields: [reviewedByDoctorId], references: [id])
+
+  @@map("medical_record_entries")
+}
+
+model FollowUpRecommendation {
+  id                    String         @id @default(uuid())
+  caseId                String?        @map("case_id")
+  patientId             String         @map("patient_id")
+  recommendedTest       String         @map("recommended_test")
+  urgency               String?        // within_1_week, within_2_weeks, within_1_month
+  notes                 String?
+  recommendingDoctorId  String         @map("recommending_doctor_id")
+  diagnosticCentreId    String?        @map("diagnostic_centre_id")
+  status                FollowUpStatus @default(RECOMMENDED)
+  bookedAt              DateTime?      @map("booked_at")
+  completedAt           DateTime?      @map("completed_at")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  case                  EmergencyCase? @relation(fields: [caseId], references: [id])
+  recommendedBy         User           @relation("RecommendedBy", fields: [recommendingDoctorId], references: [id])
+
+  @@map("follow_up_recommendations")
+}
+
+model DiagnosticCentre {
+  id              String    @id @default(uuid())
+  name            String
+  locationLat     Float     @map("location_lat")
+  locationLng     Float     @map("location_lng")
+  address         String?
+  phone           String?
+  availableTests  String[]  @default([]) @map("available_tests")
+  avgWaitMinutes  Int?      @map("avg_wait_minutes")
+  verified        Boolean   @default(false)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("diagnostic_centres")
+}
+
+model Notification {
+  id          String              @id @default(uuid())
+  caseId      String?             @map("case_id")
+  recipient   String              // phone number or user_id
+  channel     NotificationChannel
+  content     String
+  sentAt      DateTime            @default(now()) @map("sent_at")
+  deliveredAt DateTime?           @map("delivered_at")
+  failedAt    DateTime?           @map("failed_at")
+  failReason  String?             @map("fail_reason")
+
+  case        EmergencyCase?      @relation(fields: [caseId], references: [id])
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?  @map("actor_user_id")
+  actorRole   String?  @map("actor_role")
+  action      String   // PROFILE_QR_LOOKUP, RECORD_ACCESSED, BED_UPDATED, etc.
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  metadata    Json?    // Additional context (IP address, case_id, etc.)
+  timestamp   DateTime @default(now())
+
+  actor       User?    @relation(fields: [actorUserId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
