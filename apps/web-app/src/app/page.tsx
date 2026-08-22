@@ -1,16 +1,45 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { GlassBackground } from '@/components/layout/GlassBackground';
+import { EmergencyButton } from '@/components/ui/EmergencyButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassNavbar } from '@/components/ui/GlassNavbar';
-import { EmergencyButton } from '@/components/ui/EmergencyButton';
+import { api } from '@/lib/api';
 
 export default function EmergencyLanding() {
+  const router = useRouter();
+  const [triggering, setTriggering] = useState(false);
+
   const handleEmergencyTrigger = async () => {
-    // 1. Request geolocation immediately
-    // 2. Create emergency case via POST /emergency/trigger
-    // 3. Navigate to triage or live status
-    console.log("Emergency Triggered!");
+    setTriggering(true);
+    
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      setTriggering(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const { caseId } = await api.emergency.trigger(latitude, longitude);
+          router.push(`/triage/${caseId}`);
+        } catch (error) {
+          console.error(error);
+          alert("Failed to connect to emergency services. Please call 112 directly.");
+          setTriggering(false);
+        }
+      },
+      (error) => {
+        console.error(error);
+        alert("We need your location to dispatch an ambulance. Please enable it.");
+        setTriggering(false);
+      },
+      { enableHighAccuracy: true }
+    );
   };
 
   return (
