@@ -194,6 +194,7 @@ model Hospital {
   bedCapacityFree   Int       @map("bed_capacity_free")
   bedUpdatedAt      DateTime? @map("bed_updated_at")
   verifiedPartner   Boolean   @default(false) @map("verified_partner")
+  rating            Float     @default(5.0)
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
