@@ -1,4 +1,4 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, BadRequestException } from '@nestjs/common';
 import { MatchingService } from './matching.service';
 
 @Controller('api/v1/hospitals')
@@ -12,5 +12,15 @@ export class MatchingController {
     }
     const radiusMeters = radius ? parseInt(radius, 10) : 20000;
     return this.matchingService.matchHospitals(caseId, radiusMeters);
+  }
+
+  @Post('alert')
+  async alertHospital(@Body() body: { caseId: string, hospitalId: string, alternates: any[] }) {
+    return this.matchingService.alertHospital(body.caseId, body.hospitalId, body.alternates);
+  }
+
+  @Post('accept')
+  async acceptCase(@Body() body: { caseId: string, hospitalId: string }) {
+    return this.matchingService.acceptCase(body.caseId, body.hospitalId);
   }
 }

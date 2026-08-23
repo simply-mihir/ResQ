@@ -58,7 +58,7 @@ export default function RecordsTimelineClient({ initialRecords, patientId }: { i
             <div key={record.id} className="bg-white rounded-2xl p-6 shadow-sm border border-neutral-100">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={\`w-10 h-10 rounded-xl flex items-center justify-center \${record.status === 'VERIFIED' ? 'bg-emerald-100 text-emerald-600' : record.status === 'AI_EXTRACTED' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'}\`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${record.status === 'VERIFIED' ? 'bg-emerald-100 text-emerald-600' : record.status === 'AI_EXTRACTED' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'}`}>
                     <FileText size={20} />
                   </div>
                   <div>

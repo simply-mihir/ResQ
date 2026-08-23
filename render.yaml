@@ -1,0 +1,42 @@
+services:
+  # 1. Emergency Service
+  - type: web
+    name: emergency-service
+    env: node
+    rootDir: services/emergency-service
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 4001
+    plan: free
+
+  # 2. Dispatch Service
+  - type: web
+    name: dispatch-service
+    env: node
+    rootDir: services/dispatch-service
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 4003
+    plan: free
+
+  # 3. Records Service
+  - type: web
+    name: records-service
+    env: node
+    rootDir: services/records-service
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 3003
+    plan: free

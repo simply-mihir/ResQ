@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Patch, Param, Get } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmergencyService } from './emergency.service';
 
 function generateCaseNumber() {
   return `HC-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
@@ -7,7 +8,10 @@ function generateCaseNumber() {
 
 @Controller('emergency')
 export class EmergencyController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emergencyService: EmergencyService,
+  ) {}
 
   @Post('trigger')
   async triggerEmergency(
@@ -28,24 +32,25 @@ export class EmergencyController {
   @Patch('triage/:id')
   async submitTriage(
     @Param('id') id: string,
-    @Body() body: { conscious: boolean; breathing: boolean; bleeding: boolean }
+    @Body() body: { conscious?: boolean; breathing?: boolean; bleeding?: boolean; situationType?: string; trapped?: boolean }
   ) {
-    // Basic severity calculation
-    let severityTier: 'STABLE' | 'SERIOUS' | 'CRITICAL' = 'STABLE';
-    let severityScore = 0;
+    const severityTier = this.emergencyService.computeSeverityTier(body.situationType || 'unknown', {
+      unconscious: body.conscious === false,
+      severeBleeding: body.bleeding === true,
+      breathingProblem: body.breathing === false,
+      trapped: body.trapped === true,
+    });
 
-    if (!body.conscious || !body.breathing || body.bleeding) {
-      severityTier = 'CRITICAL';
-      severityScore = 10;
-    } else {
-      severityTier = 'SERIOUS';
-      severityScore = 5;
-    }
+    let severityScore = 0;
+    if (severityTier === 'CRITICAL') severityScore = 10;
+    else if (severityTier === 'HIGH') severityScore = 8;
+    else if (severityTier === 'MEDIUM') severityScore = 5;
+    else severityScore = 2;
 
     const updatedCase = await this.prisma.emergencyCase.update({
       where: { id },
       data: {
-        triageData: JSON.parse(JSON.stringify(body)), // Simple conversion to json compatible
+        triageData: JSON.parse(JSON.stringify(body)),
         severityTier,
         severityScore,
         status: 'TRIAGE_COMPLETE',
@@ -70,5 +75,31 @@ export class EmergencyController {
     });
 
     return cases;
+  }
+
+  @Post('scan/:token')
+  async scanQr(
+    @Param('token') token: string,
+    @Body() body: { location: { lat: number; lng: number } }
+  ) {
+    // 1. Find profile by token
+    const profile = await this.prisma.emergencyProfile.findFirst({
+      where: { qrToken: token },
+      include: { user: true }
+    });
+
+    if (!profile) {
+      throw new Error('Invalid QR Token');
+    }
+
+    // 2. Log the scan matching the schema
+    const log = await this.prisma.qrScanLog.create({
+      data: {
+        patientId: profile.userId,
+        resolvedFields: ['bloodGroup', 'allergies', 'medications']
+      }
+    });
+
+    return { success: true, logId: log.id, user: profile.user ? { id: profile.user.id, name: profile.user.name } : null };
   }
 }

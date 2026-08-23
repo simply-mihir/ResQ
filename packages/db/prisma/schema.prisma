@@ -32,8 +32,9 @@ enum CaseStatus {
 }
 
 enum SeverityTier {
-  STABLE
-  SERIOUS
+  LOW
+  MEDIUM
+  HIGH
   CRITICAL
 }
 
@@ -200,8 +201,21 @@ model Hospital {
 
   // Relations
   cases             EmergencyCase[]
+  specialists       HospitalSpecialist[]
 
   @@map("hospitals")
+}
+
+model HospitalSpecialist {
+  id          String   @id @default(uuid())
+  hospitalId  String   @map("hospital_id")
+  specialty   String
+  available   Boolean  @default(true)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  hospital    Hospital @relation(fields: [hospitalId], references: [id])
+
+  @@map("hospital_specialists")
 }
 
 model Ambulance {
@@ -312,4 +326,13 @@ model AuditLog {
   @@index([actorUserId])
   @@index([timestamp])
   @@map("audit_logs")
+}
+
+model QrScanLog {
+  id              String   @id @default(uuid())
+  patientId       String?  @map("patient_id")
+  scannedAt       DateTime @default(now()) @map("scanned_at")
+  resolvedFields  String[] @map("resolved_fields")
+
+  @@map("qr_scan_logs")
 }

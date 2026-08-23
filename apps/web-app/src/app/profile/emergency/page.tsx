@@ -19,7 +19,7 @@ export default async function EmergencyProfilePage() {
     );
   }
 
-  const scanUrl = \`https://app.health.com/responder/scan/\${profile.qrToken}\`;
+  const scanUrl = `https://app.health.com/responder/scan/${profile.qrToken}`;
 
   return (
     <div className="min-h-screen bg-neutral-50 py-12 px-4">

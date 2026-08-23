@@ -10,5 +10,17 @@ export const api = {
       if (!res.ok) throw new Error('Failed to fetch active emergencies');
       return res.json();
     },
+  },
+  dispatch: {
+    acceptCase: async (caseId: string, hospitalId: string) => {
+      const DISPATCH_SERVICE_URL = process.env.NEXT_PUBLIC_DISPATCH_API_URL || 'http://localhost:4003';
+      const res = await fetch(`${DISPATCH_SERVICE_URL}/api/v1/hospitals/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caseId, hospitalId }),
+      });
+      if (!res.ok) throw new Error('Failed to accept case');
+      return res.json();
+    }
   }
 };

@@ -10,9 +10,11 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   console.log('Clearing existing data...');
+  await prisma.caseStatusHistory.deleteMany();
+  await prisma.emergencyCase.deleteMany();
+  await prisma.hospitalSpecialist.deleteMany();
   await prisma.ambulance.deleteMany();
   await prisma.hospital.deleteMany();
-  await prisma.emergencyCase.deleteMany();
 
   console.log('Seeding hospitals...');
   // Mumbai coordinates ~ 19.0760, 72.8777
@@ -22,11 +24,19 @@ async function main() {
       locationLat: 19.075,
       locationLng: 72.877,
       address: 'Navi Mumbai',
-      specialties: ['Cardiology', 'Orthopedics', 'Neurology'],
+      specialties: ['cardiology', 'trauma_surgery', 'neurology'],
       traumaCapable: true,
       bedCapacityTotal: 500,
       bedCapacityFree: 45,
       verifiedPartner: true,
+      rating: 4.8,
+      specialists: {
+        create: [
+          { specialty: 'cardiology', available: true },
+          { specialty: 'trauma_surgery', available: true },
+          { specialty: 'neurology', available: true },
+        ]
+      }
     }
   });
 
@@ -36,11 +46,40 @@ async function main() {
       locationLat: 19.167,
       locationLng: 72.943,
       address: 'Mulund West',
-      specialties: ['Emergency Medicine', 'Pediatrics'],
+      specialties: ['general', 'cardiology'],
       traumaCapable: false,
       bedCapacityTotal: 300,
       bedCapacityFree: 12,
       verifiedPartner: true,
+      rating: 4.2,
+      specialists: {
+        create: [
+          { specialty: 'general', available: true },
+          { specialty: 'cardiology', available: false },
+        ]
+      }
+    }
+  });
+
+  const h3 = await prisma.hospital.create({
+    data: {
+      name: 'Nanavati Super Speciality',
+      locationLat: 19.098,
+      locationLng: 72.839,
+      address: 'Vile Parle West',
+      specialties: ['neurology', 'general', 'trauma_surgery'],
+      traumaCapable: true,
+      bedCapacityTotal: 400,
+      bedCapacityFree: 8,
+      verifiedPartner: true,
+      rating: 4.5,
+      specialists: {
+        create: [
+          { specialty: 'neurology', available: true },
+          { specialty: 'general', available: true },
+          { specialty: 'trauma_surgery', available: false },
+        ]
+      }
     }
   });
 

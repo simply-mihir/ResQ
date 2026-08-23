@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { api } from '@/lib/api';
 
+import { IncomingAlertCard } from '@/components/ui/IncomingAlertCard';
+
 type EmergencyCase = {
   id: string;
   caseNumber: string;
@@ -11,11 +13,15 @@ type EmergencyCase = {
   severityTier: 'CRITICAL' | 'SERIOUS' | 'STABLE';
   triageData: any;
   createdAt: string;
+  assignedHospitalId?: string | null;
+  hospitalAlertedAt?: string | null;
+  hospitalAcknowledgedAt?: string | null;
 };
 
 export default function DashboardPage() {
   const [cases, setCases] = useState<EmergencyCase[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rejectedCases, setRejectedCases] = useState<Set<string>>(new Set());
 
   const fetchCases = async () => {
     try {
@@ -49,16 +55,34 @@ export default function DashboardPage() {
   const formatTriage = (data: any) => {
     if (!data) return 'No data';
     const issues = [];
-    if (!data.conscious) issues.push('Unconscious');
-    if (!data.breathing) issues.push('Not breathing');
+    if (data.conscious === false) issues.push('Unconscious');
+    if (data.breathing === false) issues.push('Not breathing');
     if (data.bleeding) issues.push('Severe bleeding');
     
     if (issues.length === 0) return 'Stable Vitals';
     return issues.join(', ');
   };
 
+  // Find incoming cases (status === TRIAGE_COMPLETE and not yet rejected locally)
+  const incomingCases = cases.filter(c => c.status === 'TRIAGE_COMPLETE' && !c.hospitalAcknowledgedAt && !rejectedCases.has(c.id));
+
   return (
     <DashboardLayout>
+      {incomingCases.map(incoming => (
+        <IncomingAlertCard 
+           key={incoming.id}
+           emergency={incoming} 
+           hospitalId={incoming.assignedHospitalId || 'test-hospital-id'} 
+           onAccept={(id: string) => {
+             // In real app, refetching will update the status to HOSPITAL_ACCEPTED
+             fetchCases();
+           }}
+           onReject={() => {
+             setRejectedCases(prev => new Set(prev).add(incoming.id));
+           }}
+        />
+      ))}
+
       <div className="flex justify-between items-end mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white mb-1">Incoming Emergencies</h1>

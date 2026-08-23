@@ -45,7 +45,7 @@ export default function ReviewQueueClient({ records }: { records: any[] }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className={\`text-sm font-semibold \${isLowConfidence ? 'text-amber-500 flex items-center gap-1' : 'text-emerald-500'}\`}>
+                    <span className={`text-sm font-semibold ${isLowConfidence ? 'text-amber-500 flex items-center gap-1' : 'text-emerald-500'}`}>
                       {isLowConfidence && <AlertTriangle size={16} />}
                       {(record.extractionConfidence * 100).toFixed(0)}% Confidence
                     </span>
