@@ -64,7 +64,7 @@ export default function MasterLandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 mb-6 leading-[1.1] drop-shadow-lg">
+          <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 mb-6 leading-[1.2] pb-4 drop-shadow-lg">
             Next-Gen Emergency <br /> Intelligence.
           </h1>
 
