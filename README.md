@@ -17,6 +17,24 @@ A next-generation emergency intelligence MVP designed to seamlessly connect pati
 
 ResQ operates on a three-tier architecture serving Admins, Hospitals, and Patients. Here is the complete workflow of the Minimum Viable Product:
 
+```mermaid
+sequenceDiagram
+    participant Patient
+    participant ResQ System
+    participant Hospital
+    
+    Patient->>ResQ System: Registers with Medical Profile
+    Hospital->>ResQ System: Admin Onboards & Dispatchers Login
+    
+    Note over Patient,Hospital: Emergency Event Occurs
+    
+    Patient->>ResQ System: Triggers SOS (Full Triage)
+    ResQ System->>ResQ System: Captures GPS Coordinates
+    ResQ System->>Hospital: Routes Alert to Nearest Hospital
+    Hospital->>ResQ System: Views Patient Location & Vitals
+    Hospital->>Patient: Dispatches Ambulance
+```
+
 ### 1. System Administration
 - **Infrastructure Setup:** The platform requires an initial setup by a System Administrator. The admin accesses the highly secured `Admin Setup` portal.
 - **Hospital Onboarding:** The administrator registers participating hospital networks into the database, initializing their emergency capacities and generating their internal credentials.
@@ -67,12 +85,12 @@ graph TD
 
 The platform is engineered using modern, scalable, and highly performant technologies:
 
-- **Next.js 14** — Full-stack React framework
-- **Tailwind CSS** — Utility-first styling and glassmorphism UI
-- **Prisma** — Type-safe Database ORM
-- **Supabase** — Serverless PostgreSQL database
-- **Nodemailer** — Secure OTP email delivery
-- **Vercel** — Serverless deployment & Edge caching
+- ![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white) — Full-stack React framework
+- ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) — Utility-first styling and glassmorphism UI
+- ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white) — Type-safe Database ORM
+- ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white) — Serverless PostgreSQL database
+- ![Nodemailer](https://img.shields.io/badge/Nodemailer-SMTP-blue?style=for-the-badge) — Secure OTP email delivery
+- ![Vercel](https://img.shields.io/badge/Vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white) — Serverless deployment & Edge caching
 
 ---
 
