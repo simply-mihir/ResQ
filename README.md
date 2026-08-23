@@ -1,6 +1,11 @@
 # ResQ: Next-Gen Emergency Intelligence
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://health-mvp-web-app-zeta.vercel.app/)
+![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Nodemailer](https://img.shields.io/badge/Nodemailer-SMTP-blue?style=for-the-badge)
 
 A next-generation emergency intelligence MVP designed to seamlessly connect patients, hospitals, and dispatchers in real-time. ResQ replaces fragmented emergency response systems with a unified, high-speed, serverless web application that prioritizes rapid triage and geolocation routing.
 
@@ -8,7 +13,7 @@ A next-generation emergency intelligence MVP designed to seamlessly connect pati
 
 ---
 
-## 🚀 The Workflow
+## The Workflow
 
 ResQ operates on a three-tier architecture serving Admins, Hospitals, and Patients. Here is the complete workflow of the Minimum Viable Product:
 
@@ -29,7 +34,7 @@ ResQ operates on a three-tier architecture serving Admins, Hospitals, and Patien
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 The MVP is built as a unified Next.js application, integrating three distinct frontends into a single scalable codebase powered by serverless API routes.
 
@@ -58,20 +63,20 @@ graph TD
 
 ---
 
-## 💻 Technology Stack
+## Technology Stack
 
 The platform is engineered using modern, scalable, and highly performant technologies:
 
-- ![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white) — Full-stack React framework
-- ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) — Utility-first styling and glassmorphism UI
-- ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white) — Type-safe Database ORM
-- ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white) — Serverless PostgreSQL database
-- ![Nodemailer](https://img.shields.io/badge/Nodemailer-SMTP-blue?style=for-the-badge) — Secure OTP email delivery
-- ![Vercel](https://img.shields.io/badge/Vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white) — Serverless deployment & Edge caching
+- **Next.js 14** — Full-stack React framework
+- **Tailwind CSS** — Utility-first styling and glassmorphism UI
+- **Prisma** — Type-safe Database ORM
+- **Supabase** — Serverless PostgreSQL database
+- **Nodemailer** — Secure OTP email delivery
+- **Vercel** — Serverless deployment & Edge caching
 
 ---
 
-## ⚙️ Local Development Setup
+## Local Development Setup
 
 To run the platform locally, follow these steps:
 
@@ -108,7 +113,7 @@ Navigate to `http://localhost:3000` to access the application.
 
 ---
 
-## 🌐 Deployment Details
+## Deployment Details
 
 This application is continuously deployed via **Vercel**.
 - **Stateless Architecture:** The OTP authentication mechanism was explicitly engineered using secure HTTP-only cookies to ensure compatibility with Vercel's ephemeral Serverless Functions.
