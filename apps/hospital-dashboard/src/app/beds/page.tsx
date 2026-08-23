@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import BedManagementClient from './BedManagementClient';
 import { prisma } from '@/lib/prisma';
 

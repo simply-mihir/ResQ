@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from '@/lib/prisma';
 import AmbulanceTracker from '@/components/maps/AmbulanceTracker';
 import { notFound } from 'next/navigation';
