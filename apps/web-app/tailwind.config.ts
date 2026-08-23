@@ -51,8 +51,8 @@ const config: Config = {
         'neon-cyan': '0 0 15px rgba(0, 240, 255, 0.3)',
       },
       fontFamily: {
-        sans: ['var(--font-lobster)', 'sans-serif'], // Enforced across portal
-        display: ['var(--font-lobster)', 'sans-serif'],
+        sans: ['var(--font-elms-sans)', 'sans-serif'], // Enforced across portal
+        display: ['var(--font-elms-sans)', 'sans-serif'],
         mono: ['var(--font-geist-mono)'],
       },
       animation: {

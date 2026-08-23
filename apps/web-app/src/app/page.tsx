@@ -7,7 +7,7 @@ export default function MasterLandingPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white selection:bg-cyan-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#0f172a] text-white selection:bg-cyan-500/30 overflow-x-hidden">
       
       {/* 
         ========================================================================
@@ -17,7 +17,7 @@ export default function MasterLandingPage() {
       <section className="relative w-full min-h-screen flex flex-col items-center justify-start pt-8 pb-12">
         
         {/* Background Image & Cinematic Gradient Overlay */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#030303]">
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#0f172a]">
           <Image
             src="/hero-bg.jpg"
             alt="Emergency Medical Response"
@@ -29,18 +29,18 @@ export default function MasterLandingPage() {
             style={{ filter: 'contrast(1.05) brightness(0.9) saturate(0.95)' }}
           />
           {/* Top gradient to fade into navbar gently */}
-          <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-[#030303]/90 via-[#030303]/40 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-b from-[#0f172a]/90 via-[#0f172a]/40 to-transparent" />
           {/* Bottom gradient to blend out the edge if page scrolls, reduced for visibility */}
-          <div className="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-[#030303] via-[#030303]/60 to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-64 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/60 to-transparent" />
           {/* Subtle radial overlay for focal depth, highly transparent in center to reveal image */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,#030303_100%)] opacity-70" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,#0f172a_100%)] opacity-70" />
         </div>
 
         {/* Minimal Navigation */}
         <nav className="relative z-20 w-full max-w-7xl px-8 flex items-center justify-between mb-16 md:mb-24">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-cyan-400 rounded-md flex items-center justify-center shadow-[0_0_12px_rgba(34,211,238,0.4)]">
-              <span className="text-[#030303] font-black text-sm tracking-tighter">R</span>
+              <span className="text-[#0f172a] font-black text-sm tracking-tighter">R</span>
             </div>
             <span className="text-xl tracking-wide text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]">ResQ</span>
           </div>
@@ -172,7 +172,7 @@ export default function MasterLandingPage() {
           </div>
 
           {/* Massive Guest SOS Button - At the end of the page */}
-          <div className="w-full max-w-4xl mx-auto mt-16 mb-8 group z-30 relative bg-[#030303] rounded-[32px]">
+          <div className="w-full max-w-4xl mx-auto mt-16 mb-8 group z-30 relative bg-[#0f172a] rounded-[32px]">
             <button 
               onClick={() => router.push('/sos')}
               className="relative w-full overflow-hidden rounded-[32px] p-[2px] shadow-emergency transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"

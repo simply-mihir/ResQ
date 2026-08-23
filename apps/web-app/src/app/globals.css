@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,300..900;1,300..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  --font-elms-sans: 'Elms Sans', sans-serif;
 
   /* ─── Color Palette ─── */
   
@@ -69,8 +72,8 @@
 
 body {
   color: var(--color-neutral-100);
-  background: #050505;
-  font-family: var(--font-lobster), system-ui, -apple-system, sans-serif;
+  background: #0f172a;
+  font-family: var(--font-elms-sans), system-ui, -apple-system, sans-serif;
   letter-spacing: 0.02em;
 }
 

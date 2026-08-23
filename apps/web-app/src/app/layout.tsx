@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import { Lobster } from 'next/font/google';
 import "./globals.css";
-
-const lobster = Lobster({ 
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-lobster',
-});
 
 export const metadata: Metadata = {
   title: "ResQ — Next-Gen Emergency Intelligence",
@@ -20,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lobster.variable} antialiased`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>
