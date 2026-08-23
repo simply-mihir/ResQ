@@ -6,12 +6,28 @@ import { QRCodeSVG } from 'qrcode.react';
 export const dynamic = "force-dynamic";
 
 export default async function MyQrPage() {
+  // Prevent build crash during Next.js static prerendering if DB isn't available
+  if (!process.env.DATABASE_URL) {
+    return (
+      <GlassBackground variant="default">
+        <div className="flex items-center justify-center min-h-screen text-neutral-600">
+          Loading Emergency Profile... (or Database URL missing)
+        </div>
+      </GlassBackground>
+    );
+  }
+
   // Fetch user (MVP: assuming single seeded patient)
-  const user = await prisma.user.findFirst({
-    include: {
-      emergencyProfile: true
-    }
-  });
+  let user;
+  try {
+    user = await prisma.user.findFirst({
+      include: {
+        emergencyProfile: true
+      }
+    });
+  } catch (error) {
+    console.warn("Prisma failed to connect during build/render:", error);
+  }
 
   const profile = user?.emergencyProfile;
 
