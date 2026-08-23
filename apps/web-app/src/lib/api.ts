@@ -1,10 +1,9 @@
-const EMERGENCY_SERVICE_URL = '/api/proxy/emergency';
-const DISPATCH_SERVICE_URL = '/api/proxy/dispatch';
+// All API calls now go through local Next.js API routes (no NestJS microservices needed)
 
 export const api = {
   emergency: {
     trigger: async (lat: number, lng: number) => {
-      const res = await fetch(`${EMERGENCY_SERVICE_URL}/emergency/trigger`, {
+      const res = await fetch('/api/emergency/trigger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ locationLat: lat, locationLng: lng }),
@@ -13,43 +12,60 @@ export const api = {
       return res.json();
     },
     submitTriage: async (caseId: string, data: { conscious: boolean; breathing: boolean; bleeding: boolean }) => {
-      const res = await fetch(`${EMERGENCY_SERVICE_URL}/emergency/triage/${caseId}`, {
+      const res = await fetch(`/api/emergency/triage/${caseId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error('Failed to submit triage');
       return res.json();
-    }
+    },
   },
   dispatch: {
     dispatchAmbulance: async (caseId: string) => {
-      const res = await fetch(`${DISPATCH_SERVICE_URL}/api/v1/dispatch/ambulance`, {
+      const res = await fetch('/api/dispatch/ambulance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ caseId }),
       });
       if (!res.ok) throw new Error('Failed to dispatch ambulance');
       return res.json();
-    }
+    },
   },
   hospitals: {
     match: async (caseId: string) => {
-      const res = await fetch(`${DISPATCH_SERVICE_URL}/api/v1/hospitals/match?caseId=${caseId}`);
+      const res = await fetch(`/api/hospitals/match?caseId=${caseId}`);
       if (!res.ok) throw new Error('Failed to get hospital matches');
       return res.json();
-    }
+    },
   },
   responder: {
-    logQrScan: async (token: string, location: { lat: number, lng: number }) => {
-      // Fixed: Removed /api/v1/ to match @Controller('emergency') in backend
-      const res = await fetch(`${EMERGENCY_SERVICE_URL}/emergency/scan/${token}`, {
+    logQrScan: async (token: string, location: { lat: number; lng: number }) => {
+      const res = await fetch(`/api/qr/scan/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ location }),
       });
       if (!res.ok) throw new Error('Failed to log QR scan');
       return res.json();
-    }
-  }
+    },
+    getProfile: async (token: string) => {
+      const res = await fetch(`/api/qr/profile/${token}`);
+      if (!res.ok) throw new Error('Failed to fetch profile');
+      return res.json();
+    },
+  },
+  records: {
+    upload: async (file: File, patientId: string) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('patientId', patientId);
+      const res = await fetch('/api/records/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to upload record');
+      return res.json();
+    },
+  },
 };

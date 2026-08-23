@@ -96,10 +96,49 @@ export class EmergencyController {
     const log = await this.prisma.qrScanLog.create({
       data: {
         patientId: profile.userId,
-        resolvedFields: ['bloodGroup', 'allergies', 'medications']
+        resolvedFields: ['bloodGroup', 'allergies', 'medications', 'chronicConditions', 'emergencyContact']
       }
     });
 
-    return { success: true, logId: log.id, user: profile.user ? { id: profile.user.id, name: profile.user.name } : null };
+    // 3. Return full profile data for first responder view
+    return {
+      success: true,
+      logId: log.id,
+      profile: {
+        bloodGroup: profile.bloodGroup,
+        allergies: profile.allergies,
+        chronicConditions: profile.chronicConditions,
+        currentMedications: profile.currentMedications,
+        emergencyContactName: profile.emergencyContactName,
+        emergencyContactPhone: profile.emergencyContactPhone,
+        insuranceProvider: profile.insuranceProvider,
+      },
+      user: profile.user ? { id: profile.user.id, name: profile.user.name } : null
+    };
+  }
+
+  @Get('profile/:token')
+  async getProfileByToken(@Param('token') token: string) {
+    const profile = await this.prisma.emergencyProfile.findFirst({
+      where: { qrToken: token },
+      include: { user: true }
+    });
+
+    if (!profile) {
+      throw new Error('Invalid QR Token');
+    }
+
+    return {
+      profile: {
+        bloodGroup: profile.bloodGroup,
+        allergies: profile.allergies,
+        chronicConditions: profile.chronicConditions,
+        currentMedications: profile.currentMedications,
+        emergencyContactName: profile.emergencyContactName,
+        emergencyContactPhone: profile.emergencyContactPhone,
+        insuranceProvider: profile.insuranceProvider,
+      },
+      user: profile.user ? { id: profile.user.id, name: profile.user.name } : null
+    };
   }
 }

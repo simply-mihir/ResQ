@@ -1,39 +1,59 @@
 import React from 'react';
 
-export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  userName?: string;
+  hospitalName?: string;
+}
+
+export const DashboardLayout = ({
+  children,
+  userName = 'Staff User',
+  hospitalName = 'Hospital',
+}: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen bg-slate-900 flex text-slate-100 font-sans">
       {/* Sidebar */}
       <aside className="w-64 bg-slate-800/50 backdrop-blur-xl border-r border-slate-700/50 hidden md:flex flex-col">
         <div className="p-6 border-b border-slate-700/50 flex items-center gap-3">
           <div className="w-8 h-8 bg-blue-500 rounded-lg shadow-lg shadow-blue-500/20 flex items-center justify-center">
-            <span className="font-bold text-white text-sm">H</span>
+            <span className="font-bold text-white text-sm">R</span>
           </div>
           <div>
-            <h1 className="font-bold tracking-wide">HEALTH</h1>
+            <h1 className="font-bold tracking-wide">ResQ</h1>
             <p className="text-[10px] text-blue-400 font-medium uppercase tracking-widest">Dispatch Center</p>
           </div>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <a href="#" className="flex items-center gap-3 px-4 py-3 bg-blue-500/10 text-blue-400 rounded-xl font-medium transition-colors border border-blue-500/20">
+          <a href="/" className="flex items-center gap-3 px-4 py-3 bg-blue-500/10 text-blue-400 rounded-xl font-medium transition-colors border border-blue-500/20">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
             Active Emergencies
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-700/30 hover:text-slate-200 rounded-xl font-medium transition-colors">
+          <a href="/beds" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-700/30 hover:text-slate-200 rounded-xl font-medium transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            Analytics
+            Bed Management
+          </a>
+          <a href="/records" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-700/30 hover:text-slate-200 rounded-xl font-medium transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Medical Records
           </a>
         </nav>
         <div className="p-4 border-t border-slate-700/50">
           <div className="flex items-center gap-3 px-4 py-2">
-            <div className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600"></div>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border border-slate-600 flex items-center justify-center">
+              <span className="text-white text-xs font-bold">
+                {userName.charAt(0).toUpperCase()}
+              </span>
+            </div>
             <div className="text-sm">
-              <p className="font-medium">Dr. Smith</p>
-              <p className="text-xs text-slate-400">City Hospital</p>
+              <p className="font-medium">{userName}</p>
+              <p className="text-xs text-slate-400">{hospitalName}</p>
             </div>
           </div>
         </div>

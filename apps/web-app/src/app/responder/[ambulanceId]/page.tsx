@@ -15,7 +15,7 @@ export default async function ResponderPage({ params }: { params: { ambulanceId:
   const activeCase = await prisma.emergencyCase.findFirst({
     where: { 
       assignedAmbulanceId: params.ambulanceId,
-      status: { in: ['DISPATCHED', 'IN_TRANSIT'] }
+      status: { in: ['DISPATCHED', 'EN_ROUTE_TO_PATIENT', 'EN_ROUTE_TO_HOSPITAL', 'AT_PATIENT'] }
     },
   });
 

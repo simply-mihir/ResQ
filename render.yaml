@@ -8,8 +8,12 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: DIRECT_URL
+        sync: false
       - key: PORT
         value: 4001
+      - key: NODE_VERSION
+        value: 20.11.0
     plan: free
 
   # 2. Dispatch Service
@@ -21,8 +25,12 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: DIRECT_URL
+        sync: false
       - key: PORT
         value: 4003
+      - key: NODE_VERSION
+        value: 20.11.0
     plan: free
 
   # 3. Records Service
@@ -34,6 +42,10 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: DIRECT_URL
+        sync: false
       - key: PORT
         value: 3003
+      - key: NODE_VERSION
+        value: 20.11.0
     plan: free

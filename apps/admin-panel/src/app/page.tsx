@@ -115,9 +115,9 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm font-medium text-white transition-colors">
-              View All Logs
-            </button>
+            <a href="/analytics" className="block w-full mt-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm font-medium text-white text-center transition-colors">
+              View Analytics Dashboard
+            </a>
           </motion.div>
 
         </div>

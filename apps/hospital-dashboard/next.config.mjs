@@ -20,6 +20,10 @@ const nextConfig = {
       {
         source: '/api/proxy/dispatch/:path*',
         destination: `${getUrl(process.env.NEXT_PUBLIC_DISPATCH_API_URL, 'http://localhost:4003')}/:path*`
+      },
+      {
+        source: '/api/proxy/records/:path*',
+        destination: `${getUrl(process.env.NEXT_PUBLIC_RECORDS_API_URL, 'http://localhost:3003')}/:path*`
       }
     ];
   }

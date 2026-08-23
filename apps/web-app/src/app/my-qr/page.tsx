@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/lib/auth';
 import { GlassBackground } from '@/components/layout/GlassBackground';
 import { GlassNavbar } from '@/components/ui/GlassNavbar';
 import { QRCodeSVG } from 'qrcode.react';
@@ -6,30 +7,13 @@ import { QRCodeSVG } from 'qrcode.react';
 export const dynamic = "force-dynamic";
 
 export default async function MyQrPage() {
-  // Prevent build crash during Next.js static prerendering if DB isn't available
-  if (!process.env.DATABASE_URL) {
-    return (
-      <GlassBackground variant="default">
-        <div className="flex items-center justify-center min-h-screen text-neutral-600">
-          Loading Emergency Profile... (or Database URL missing)
-        </div>
-      </GlassBackground>
-    );
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect('/login');
   }
 
-  // Fetch user (MVP: assuming single seeded patient)
-  let user;
-  try {
-    user = await prisma.user.findFirst({
-      include: {
-        emergencyProfile: true
-      }
-    });
-  } catch (error) {
-    console.warn("Prisma failed to connect during build/render:", error);
-  }
-
-  const profile = user?.emergencyProfile;
+  const profile = user.emergencyProfile;
 
   return (
     <GlassBackground variant="default">

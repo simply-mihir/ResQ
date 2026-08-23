@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Upload, FileText, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { api } from '@/lib/api';
 
 export default function RecordsTimelineClient({ initialRecords, patientId }: { initialRecords: any[], patientId: string }) {
   const [records, setRecords] = useState(initialRecords);
@@ -10,23 +11,15 @@ export default function RecordsTimelineClient({ initialRecords, patientId }: { i
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-    
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('patientId', patientId);
 
+    setIsUploading(true);
     try {
-      const res = await fetch('http://localhost:3003/api/v1/records/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      if (res.ok) {
-        // Optimistically add to UI or reload
-        window.location.reload();
-      }
+      await api.records.upload(file, patientId);
+      // Reload to show new record
+      window.location.reload();
     } catch (error) {
       console.error(error);
+      alert('Failed to upload record. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -39,7 +32,7 @@ export default function RecordsTimelineClient({ initialRecords, patientId }: { i
           <h1 className="text-3xl font-bold text-neutral-800">Medical Records</h1>
           <p className="text-neutral-500">Your health history and documents</p>
         </div>
-        
+
         <div>
           <label className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl font-medium transition-colors cursor-pointer flex items-center gap-2">
             {isUploading ? <span className="animate-pulse">Uploading...</span> : <><Upload size={18} /> Upload Record</>}
@@ -51,7 +44,7 @@ export default function RecordsTimelineClient({ initialRecords, patientId }: { i
       <div className="space-y-6">
         {records.length === 0 ? (
           <div className="text-center p-8 bg-white rounded-2xl shadow-sm border border-neutral-100">
-            <p className="text-neutral-500">No medical records found.</p>
+            <p className="text-neutral-500">No medical records found. Upload your first document above.</p>
           </div>
         ) : (
           records.map((record) => (

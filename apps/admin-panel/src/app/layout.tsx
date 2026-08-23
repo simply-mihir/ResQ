@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Health MVP | Admin Dashboard",
-  description: "Central command center for Health platform",
+  title: "ResQ | Admin Dashboard",
+  description: "Administrative command center for emergency operations",
 };
 
 export default function RootLayout({

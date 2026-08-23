@@ -1,6 +1,22 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+/**
+ * Haversine distance in kilometers between two lat/lng points.
+ */
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 @Injectable()
 export class DispatchService {
   private readonly logger = new Logger(DispatchService.name);
@@ -8,7 +24,6 @@ export class DispatchService {
   constructor(private readonly prisma: PrismaService) {}
 
   async dispatchAmbulance(caseId: string): Promise<{ ambulanceId: string, vehicleNumber: string, etaMinutes: number, status: string }> {
-    // 1. Get the case location
     const emergencyCase = await this.prisma.emergencyCase.findUnique({
       where: { id: caseId },
     });
@@ -23,33 +38,32 @@ export class DispatchService {
 
     const { locationLat, locationLng } = emergencyCase;
 
-    // 2. Find nearest AVAILABLE ambulance using PostGIS
-    const nearestAmbulances = await this.prisma.$queryRaw<any[]>`
-      SELECT 
-        id,
-        vehicle_number,
-        ST_Distance(
-          geom::geography,
-          ST_SetSRID(ST_MakePoint(${locationLng}, ${locationLat}), 4326)::geography
-        ) AS distance_meters
-      FROM ambulances
-      WHERE 
-        status = 'AVAILABLE'
-      ORDER BY distance_meters ASC
-      LIMIT 1;
-    `;
+    // Find nearest AVAILABLE ambulance using Prisma + Haversine (no PostGIS geom column dependency)
+    const availableAmbulances = await this.prisma.ambulance.findMany({
+      where: { status: 'AVAILABLE' },
+    });
 
-    if (!nearestAmbulances || nearestAmbulances.length === 0) {
-      throw new NotFoundException('No available ambulances found nearby');
+    if (!availableAmbulances || availableAmbulances.length === 0) {
+      throw new NotFoundException('No available ambulances found');
     }
 
-    const assignedAmbulance = nearestAmbulances[0];
-    const distanceKm = assignedAmbulance.distance_meters / 1000;
-    
-    // Estimate ETA (assuming 40km/h for ambulance ~ 0.66 km/min)
-    const etaMinutes = Math.max(1, Math.ceil(distanceKm / 0.66));
+    // Sort by distance using Haversine
+    const withDistance = availableAmbulances
+      .filter((a) => a.currentLat !== null && a.currentLng !== null)
+      .map((a) => ({
+        ...a,
+        distanceKm: haversineKm(locationLat, locationLng, a.currentLat!, a.currentLng!),
+      }))
+      .sort((a, b) => a.distanceKm - b.distanceKm);
 
-    // 3. Update case and ambulance status transactionally
+    if (withDistance.length === 0) {
+      throw new NotFoundException('No ambulances with known location found');
+    }
+
+    const assignedAmbulance = withDistance[0];
+    const etaMinutes = Math.max(1, Math.ceil(assignedAmbulance.distanceKm / 0.66));
+
+    // Update case and ambulance status transactionally
     await this.prisma.$transaction(async (tx) => {
       await tx.emergencyCase.update({
         where: { id: caseId },
@@ -68,23 +82,22 @@ export class DispatchService {
         },
       });
 
-      // Add status history
       await tx.caseStatusHistory.create({
         data: {
           caseId: caseId,
           fromStatus: emergencyCase.status,
           toStatus: 'DISPATCHED',
           changedBy: 'system',
-          notes: `Ambulance ${assignedAmbulance.vehicle_number} dispatched. ETA: ${etaMinutes} mins.`,
+          notes: `Ambulance ${assignedAmbulance.vehicleNumber} dispatched. ETA: ${etaMinutes} mins.`,
         },
       });
     });
 
-    this.logger.log(`Dispatched ambulance ${assignedAmbulance.vehicle_number} to case ${caseId}`);
+    this.logger.log(`Dispatched ambulance ${assignedAmbulance.vehicleNumber} to case ${caseId}`);
 
     return {
       ambulanceId: assignedAmbulance.id,
-      vehicleNumber: assignedAmbulance.vehicle_number,
+      vehicleNumber: assignedAmbulance.vehicleNumber,
       etaMinutes,
       status: 'DISPATCHED'
     };

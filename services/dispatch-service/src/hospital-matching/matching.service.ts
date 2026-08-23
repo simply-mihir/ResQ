@@ -23,15 +23,31 @@ export interface HospitalMatch {
   specialistAvailable: boolean;
 }
 
+/**
+ * Haversine distance in kilometers between two lat/lng points.
+ */
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371; // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 @Injectable()
 export class MatchingService {
   private readonly logger = new Logger(MatchingService.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async matchHospitals(caseId: string, radiusMeters: number = 20000): Promise<{ recommendedHospitals: HospitalMatch[], fallbackUsed: boolean, queryTimeMs: number }> {
+  async matchHospitals(caseId: string, radiusKm: number = 20): Promise<{ recommendedHospitals: HospitalMatch[], fallbackUsed: boolean, queryTimeMs: number }> {
     const startTime = Date.now();
-    
+
     const emergencyCase = await this.prisma.emergencyCase.findUnique({
       where: { id: caseId },
     });
@@ -41,7 +57,7 @@ export class MatchingService {
     }
 
     const { locationLat, locationLng, severityTier, triageData } = emergencyCase;
-    
+
     let requiredSpecialty = 'general';
     if (triageData && typeof triageData === 'object' && 'situationType' in triageData) {
       const situationType = (triageData as any).situationType;
@@ -50,59 +66,53 @@ export class MatchingService {
       else if (situationType === 'stroke') requiredSpecialty = 'neurology';
     }
 
-    // Note: in a real deployment, radiusMeters should expand if no hospitals are found in the initial radius.
-    const rawMatches = await this.prisma.$queryRaw<any[]>`
-      SELECT 
-        id,
-        name,
-        specialties,
-        trauma_capable,
-        bed_capacity_free,
-        bed_capacity_total,
-        rating,
-        ST_Distance(
-          geom::geography,
-          ST_SetSRID(ST_MakePoint(${locationLng}, ${locationLat}), 4326)::geography
-        ) AS distance_meters
-      FROM hospitals
-      WHERE 
-        ST_DWithin(
-          geom::geography,
-          ST_SetSRID(ST_MakePoint(${locationLng}, ${locationLat}), 4326)::geography,
-          ${radiusMeters}
-        )
-        AND verified_partner = true
-        AND bed_capacity_free > 0
-      ORDER BY distance_meters ASC
-      LIMIT 10;
-    `;
-
-    const hospitalIds = rawMatches.map(h => h.id);
-    const specialists = await this.prisma.hospitalSpecialist.findMany({
+    // Fetch all verified hospitals with free beds using Prisma (no PostGIS dependency)
+    const hospitals = await this.prisma.hospital.findMany({
       where: {
-        hospitalId: { in: hospitalIds },
-        specialty: requiredSpecialty,
-      }
+        verifiedPartner: true,
+        bedCapacityFree: { gt: 0 },
+      },
+      include: {
+        specialists: {
+          where: { specialty: requiredSpecialty },
+        },
+      },
     });
 
-    const specialistMap = new Map(specialists.map(s => [s.hospitalId, s.available]));
+    // Filter by radius and compute distance using Haversine formula
+    let fallbackUsed = false;
+    let filtered = hospitals
+      .map((h) => ({
+        ...h,
+        distanceKm: haversineKm(locationLat, locationLng, h.locationLat, h.locationLng),
+      }))
+      .filter((h) => h.distanceKm <= radiusKm);
 
-    const rankedHospitals: HospitalMatch[] = rawMatches.map((h) => {
-      const distanceKm = h.distance_meters / 1000;
-      const etaMin = Math.ceil(distanceKm / 0.5); // 30km/h average urban speed
+    // If no hospitals found within radius, expand to all (fallback)
+    // Note: in a real deployment, this should be an expanding-radius search
+    if (filtered.length === 0) {
+      this.logger.warn(`No hospitals within ${radiusKm}km, falling back to all verified hospitals`);
+      fallbackUsed = true;
+      filtered = hospitals.map((h) => ({
+        ...h,
+        distanceKm: haversineKm(locationLat, locationLng, h.locationLat, h.locationLng),
+      }));
+    }
 
-      const hasRequiredSpecialty = specialistMap.get(h.id) === true;
-      
-      const travelTimeScore = Math.max(0, 40 - (etaMin * 1.5)); 
-      
-      const bedRatio = h.bed_capacity_total > 0 ? (h.bed_capacity_free / h.bed_capacity_total) : 0;
-      const bedCapacityScore = Math.min(30, bedRatio * 30 + 10); 
+    const rankedHospitals: HospitalMatch[] = filtered.map((h) => {
+      const etaMin = Math.ceil(h.distanceKm / 0.5); // 30km/h average urban speed
 
-      // If specialty is required and missing/unavailable, score 0 for specialty match.
+      const hasRequiredSpecialty = h.specialists.some((s) => s.available);
+
+      const travelTimeScore = Math.max(0, 40 - (etaMin * 1.5));
+
+      const bedRatio = h.bedCapacityTotal > 0 ? (h.bedCapacityFree / h.bedCapacityTotal) : 0;
+      const bedCapacityScore = Math.min(30, bedRatio * 30 + 10);
+
       const specialistMatchScore = hasRequiredSpecialty ? 30 : 0;
 
       let traumaBonusScore = 0;
-      if (severityTier === 'CRITICAL' && h.trauma_capable) {
+      if (severityTier === 'CRITICAL' && h.traumaCapable) {
         traumaBonusScore = 20;
       }
 
@@ -114,12 +124,12 @@ export class MatchingService {
       return {
         hospitalId: h.id,
         name: h.name,
-        distanceKm: parseFloat(distanceKm.toFixed(1)),
+        distanceKm: parseFloat(h.distanceKm.toFixed(1)),
         etaMin,
-        bedCapacityFree: h.bed_capacity_free,
+        bedCapacityFree: h.bedCapacityFree,
         specialties: h.specialties || [],
         totalScore: Math.round(Math.min(100, totalScore)),
-        traumaCapable: h.trauma_capable,
+        traumaCapable: h.traumaCapable,
         rating: h.rating,
         specialistAvailable: hasRequiredSpecialty,
         breakdown: {
@@ -137,8 +147,8 @@ export class MatchingService {
     const queryTimeMs = Date.now() - startTime;
 
     return {
-      recommendedHospitals: rankedHospitals,
-      fallbackUsed: false,
+      recommendedHospitals: rankedHospitals.slice(0, 10),
+      fallbackUsed,
       queryTimeMs
     };
   }
@@ -146,13 +156,11 @@ export class MatchingService {
   private timeouts = new Map<string, NodeJS.Timeout>();
 
   async alertHospital(caseId: string, hospitalId: string, alternates: HospitalMatch[]) {
-    // 1. Clear any existing timeout
     if (this.timeouts.has(caseId)) {
       clearTimeout(this.timeouts.get(caseId)!);
       this.timeouts.delete(caseId);
     }
 
-    // 2. Update DB that hospital is alerted
     await this.prisma.emergencyCase.update({
       where: { id: caseId },
       data: {
@@ -164,7 +172,7 @@ export class MatchingService {
     await this.prisma.caseStatusHistory.create({
       data: {
         caseId,
-        fromStatus: 'TRIAGE_COMPLETE', // simplified
+        fromStatus: 'TRIAGE_COMPLETE',
         toStatus: 'TRIAGE_COMPLETE',
         changedBy: 'system',
         notes: `Hospital ${hospitalId} alerted. Waiting for acceptance.`,
@@ -173,10 +181,10 @@ export class MatchingService {
 
     this.logger.log(`Alerted hospital ${hospitalId} for case ${caseId}`);
 
-    // 3. Set timeout (e.g. 45 seconds for demo pacing)
+    // Auto-reassign after 45 seconds if hospital doesn't respond (demo pacing)
     const timeout = setTimeout(async () => {
       this.logger.warn(`Hospital ${hospitalId} timed out for case ${caseId}. Reassigning...`);
-      
+
       await this.prisma.caseStatusHistory.create({
         data: {
           caseId,

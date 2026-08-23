@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { api } from '@/lib/api';
 
 import { IncomingAlertCard } from '@/components/ui/IncomingAlertCard';
+import LiveAmbulanceMap from '@/components/maps/LiveAmbulanceMap';
 
 type EmergencyCase = {
   id: string;
   caseNumber: string;
   status: string;
-  severityTier: 'CRITICAL' | 'SERIOUS' | 'STABLE';
+  severityTier: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   triageData: any;
   createdAt: string;
   assignedHospitalId?: string | null;
@@ -18,10 +20,30 @@ type EmergencyCase = {
   hospitalAcknowledgedAt?: string | null;
 };
 
+type AuthInfo = {
+  user: { id: string; name: string | null; email: string | null; role: string; orgId: string | null };
+  hospital: { id: string; name: string } | null;
+};
+
 export default function DashboardPage() {
+  const router = useRouter();
   const [cases, setCases] = useState<EmergencyCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [rejectedCases, setRejectedCases] = useState<Set<string>>(new Set());
+  const [authInfo, setAuthInfo] = useState<AuthInfo | null>(null);
+  const [dispatchedCase, setDispatchedCase] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => {
+        if (!res.ok) throw new Error('Not authenticated');
+        return res.json();
+      })
+      .then(data => setAuthInfo(data))
+      .catch(() => {
+        router.push('/login');
+      });
+  }, [router]);
 
   const fetchCases = async () => {
     try {
@@ -45,10 +67,13 @@ export default function DashboardPage() {
     switch (tier) {
       case 'CRITICAL':
         return <span className="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs font-bold tracking-wide">CRITICAL</span>;
-      case 'SERIOUS':
-        return <span className="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-xs font-bold tracking-wide">SERIOUS</span>;
+      case 'HIGH':
+        return <span className="px-3 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded-full text-xs font-bold tracking-wide">HIGH</span>;
+      case 'MEDIUM':
+        return <span className="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-xs font-bold tracking-wide">MEDIUM</span>;
+      case 'LOW':
       default:
-        return <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold tracking-wide">STABLE</span>;
+        return <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold tracking-wide">LOW</span>;
     }
   };
 
@@ -67,12 +92,15 @@ export default function DashboardPage() {
   const incomingCases = cases.filter(c => c.status === 'TRIAGE_COMPLETE' && !c.hospitalAcknowledgedAt && !rejectedCases.has(c.id));
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      userName={authInfo?.user?.name || 'Staff User'}
+      hospitalName={authInfo?.hospital?.name || 'Hospital'}
+    >
       {incomingCases.map(incoming => (
         <IncomingAlertCard 
            key={incoming.id}
            emergency={incoming} 
-           hospitalId={incoming.assignedHospitalId || 'test-hospital-id'} 
+           hospitalId={authInfo?.hospital?.id || incoming.assignedHospitalId || 'test-hospital-id'} 
            onAccept={(id: string) => {
              // In real app, refetching will update the status to HOSPITAL_ACCEPTED
              fetchCases();
@@ -82,6 +110,38 @@ export default function DashboardPage() {
            }}
         />
       ))}
+
+      {dispatchedCase && (
+        <div className="mb-6 bg-slate-800/80 border border-emerald-500/50 rounded-2xl p-6 shadow-2xl">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-emerald-400 flex items-center gap-2">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Ambulance Dispatched Successfully!
+              </h2>
+              <p className="text-slate-300 mt-1">
+                Vehicle {dispatchedCase.ambulanceInfo?.vehicleNumber} is en route. ETA: {dispatchedCase.ambulanceInfo?.etaMinutes} mins.
+              </p>
+            </div>
+            <button 
+              onClick={() => setDispatchedCase(null)}
+              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-slate-300"
+            >
+              Close Tracking
+            </button>
+          </div>
+          <div className="h-[400px] w-full rounded-xl overflow-hidden border border-slate-700">
+            <LiveAmbulanceMap 
+              patientLocation={{ lat: dispatchedCase.locationLat || 19.0760, lng: dispatchedCase.locationLng || 72.8777 }}
+              ambulancePosition={{ lat: (dispatchedCase.locationLat || 19.0760) + 0.01, lng: (dispatchedCase.locationLng || 72.8777) + 0.01 }}
+              vehicleNumber={dispatchedCase.ambulanceInfo?.vehicleNumber}
+              etaMinutes={dispatchedCase.ambulanceInfo?.etaMinutes}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-end mb-6">
         <div>
@@ -141,8 +201,12 @@ export default function DashboardPage() {
                     <button 
                       onClick={async () => {
                         try {
-                          await api.dispatch.acceptCase(c.id, 'test-hospital-id');
+                          const res = await api.dispatch.dispatchAmbulance(c.id);
                           fetchCases(); // Refresh list after accepting
+                          setDispatchedCase({
+                            ...c,
+                            ambulanceInfo: res
+                          });
                         } catch (err) {
                           alert('Failed to dispatch. Ensure the case is still active.');
                         }

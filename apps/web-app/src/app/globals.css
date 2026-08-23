@@ -2,7 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Eleven Twenty';
+  src: url('/11.20___.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  --font-eleven-twenty: 'Eleven Twenty', sans-serif;
+
   /* ─── Color Palette ─── */
   
   /* Primary — trust, medical, calm */
@@ -67,6 +77,44 @@
 }
 
 body {
-  color: var(--color-neutral-900);
-  background: var(--color-neutral-50);
+  color: var(--color-neutral-100);
+  background: #050505;
+  font-family: var(--font-raleway), system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: 0.05em;
+}
+
+.futuristic-card {
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.futuristic-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(204, 255, 0, 0.3), transparent);
+}
+
+.futuristic-border {
+  border: 1px solid rgba(204, 255, 0, 0.3);
+  box-shadow: 0 0 10px rgba(204, 255, 0, 0.1);
+}
+
+.futuristic-border:hover {
+  border-color: rgba(204, 255, 0, 0.6);
+  box-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
 }
