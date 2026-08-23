@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Raleway } from 'next/font/google';
+import { Lobster } from 'next/font/google';
 import "./globals.css";
 
-const raleway = Raleway({ 
+const lobster = Lobster({ 
+  weight: '400',
   subsets: ['latin'],
-  variable: '--font-raleway',
+  variable: '--font-lobster',
 });
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${raleway.variable} antialiased`}>
+      <body className={`${lobster.variable} antialiased`}>
         {children}
       </body>
     </html>

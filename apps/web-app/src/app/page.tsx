@@ -40,9 +40,9 @@ export default function MasterLandingPage() {
         <nav className="relative z-20 w-full max-w-7xl px-8 flex items-center justify-between mb-16 md:mb-24">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-cyan-400 rounded-md flex items-center justify-center shadow-[0_0_12px_rgba(34,211,238,0.4)]">
-              <span className="text-[#030303] font-black text-sm tracking-tighter" style={{ fontFamily: 'var(--font-eleven-twenty)' }}>R</span>
+              <span className="text-[#030303] font-black text-sm tracking-tighter">R</span>
             </div>
-            <span className="text-xl tracking-wide text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]" style={{ fontFamily: 'var(--font-eleven-twenty)' }}>ResQ</span>
+            <span className="text-xl tracking-wide text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]">ResQ</span>
           </div>
           <div className="flex items-center gap-2">
              <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse" />
@@ -64,7 +64,7 @@ export default function MasterLandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 mb-6 leading-[1.1] drop-shadow-lg" style={{ fontFamily: 'var(--font-eleven-twenty)' }}>
+          <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-400 to-blue-500 mb-6 leading-[1.1] drop-shadow-lg">
             Next-Gen Emergency <br /> Intelligence.
           </h1>
 
@@ -96,7 +96,7 @@ export default function MasterLandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h3 className="text-2xl text-neon-cyan mb-3 tracking-wide drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]" style={{ fontFamily: 'var(--font-eleven-twenty)' }}>
+              <h3 className="text-2xl text-neon-cyan mb-3 tracking-wide drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]">
                 Patient Login
               </h3>
               <p className="text-[15px] text-[#DDD] leading-relaxed mb-8 flex-grow drop-shadow-sm">
@@ -126,7 +126,7 @@ export default function MasterLandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <h3 className="text-2xl text-blue-400 mb-3 tracking-wide drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" style={{ fontFamily: 'var(--font-eleven-twenty)' }}>
+              <h3 className="text-2xl text-blue-400 mb-3 tracking-wide drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]">
                 Hospital Login
               </h3>
               <p className="text-[15px] text-[#DDD] leading-relaxed mb-8 flex-grow drop-shadow-sm">
@@ -155,7 +155,7 @@ export default function MasterLandingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-2xl text-purple-400 mb-3 tracking-wide drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]" style={{ fontFamily: 'var(--font-eleven-twenty)' }}>
+              <h3 className="text-2xl text-purple-400 mb-3 tracking-wide drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">
                 Admin Login
               </h3>
               <p className="text-[15px] text-[#DDD] leading-relaxed mb-8 flex-grow drop-shadow-sm">

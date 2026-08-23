@@ -2,16 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Eleven Twenty';
-  src: url('/11.20___.TTF') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
-  --font-eleven-twenty: 'Eleven Twenty', sans-serif;
 
   /* ─── Color Palette ─── */
   
@@ -79,7 +70,7 @@
 body {
   color: var(--color-neutral-100);
   background: #050505;
-  font-family: var(--font-raleway), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-lobster), system-ui, -apple-system, sans-serif;
   letter-spacing: 0.02em;
 }
 
