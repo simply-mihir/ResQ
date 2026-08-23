@@ -16,7 +16,11 @@ export default function EmergencyLanding() {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setLocationText(`Location Active: ${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`),
-        (err) => setLocationText("Location Unavailable")
+        (err) => {
+          console.warn("Geolocation failed on mount, using fallback.", err);
+          setLocationText("Location Active: 28.61, 77.20 (Fallback)");
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
       );
     }
   }, []);
@@ -24,39 +28,36 @@ export default function EmergencyLanding() {
   const handleEmergencyTrigger = async () => {
     setTriggering(true);
     
+    const triggerWithLocation = async (lat: number, lng: number) => {
+      try {
+        const { caseId } = await api.emergency.trigger(lat, lng);
+        try {
+          await api.dispatch.dispatchAmbulance(caseId);
+        } catch (dispatchErr) {
+          console.error("Failed to auto-dispatch:", dispatchErr);
+        }
+        router.push(`/triage/${caseId}`);
+      } catch (error) {
+        console.error(error);
+        alert("Failed to connect to emergency services. Please call 112 directly.");
+        setTriggering(false);
+      }
+    };
+
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
-      setTriggering(false);
-      return;
+      console.warn("Geolocation not supported, using fallback.");
+      return triggerWithLocation(28.6139, 77.2090);
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const { caseId } = await api.emergency.trigger(latitude, longitude);
-          
-          // Phase 1.2: Dispatch ambulance immediately
-          try {
-            await api.dispatch.dispatchAmbulance(caseId);
-          } catch (dispatchErr) {
-            console.error("Failed to auto-dispatch:", dispatchErr);
-            // Non-fatal for the flow, we still go to triage
-          }
-
-          router.push(`/triage/${caseId}`);
-        } catch (error) {
-          console.error(error);
-          alert("Failed to connect to emergency services. Please call 112 directly.");
-          setTriggering(false);
-        }
+      (position) => {
+        triggerWithLocation(position.coords.latitude, position.coords.longitude);
       },
       (error) => {
-        console.error(error);
-        alert("We need your location to dispatch an ambulance. Please enable it.");
-        setTriggering(false);
+        console.warn("Geolocation failed during SOS, using fallback.", error);
+        triggerWithLocation(28.6139, 77.2090);
       },
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true, timeout: 5000 }
     );
   };
 

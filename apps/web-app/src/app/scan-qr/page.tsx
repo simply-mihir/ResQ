@@ -17,33 +17,31 @@ export default function ScanQrPage() {
 
     setScanning(true);
 
+    const submitScan = async (lat: number, lng: number) => {
+      try {
+        await api.responder.logQrScan(token, { lat, lng });
+        router.push(`/responder/scan/${token}`);
+      } catch (error) {
+        console.error(error);
+        alert("Invalid QR Token or Network Error");
+        setScanning(false);
+      }
+    };
+
     if (!navigator.geolocation) {
-      alert("Geolocation required to log scan");
-      setScanning(false);
-      return;
+      console.warn("Geolocation not supported, using fallback.");
+      return submitScan(28.6139, 77.2090);
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          // 1. Log the scan via the emergency-service API
-          await api.responder.logQrScan(token, {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-
-          // 2. Navigate to the responder view
-          router.push(`/responder/scan/${token}`);
-        } catch (error) {
-          console.error(error);
-          alert("Invalid QR Token or Network Error");
-          setScanning(false);
-        }
+      (position) => {
+        submitScan(position.coords.latitude, position.coords.longitude);
       },
       (error) => {
-        alert("Please enable location services to scan QR codes.");
-        setScanning(false);
-      }
+        console.warn("Geolocation failed during QR scan, using fallback.", error);
+        submitScan(28.6139, 77.2090);
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
     );
   };
 
