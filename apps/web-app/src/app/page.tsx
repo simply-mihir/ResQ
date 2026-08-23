@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GlassBackground } from '@/components/layout/GlassBackground';
-import { EmergencyButton } from '@/components/ui/EmergencyButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GlassNavbar } from '@/components/ui/GlassNavbar';
 import { api } from '@/lib/api';
@@ -11,6 +10,16 @@ import { api } from '@/lib/api';
 export default function EmergencyLanding() {
   const router = useRouter();
   const [triggering, setTriggering] = useState(false);
+  const [locationText, setLocationText] = useState("Auto-detecting location...");
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setLocationText(`Location Active: ${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`),
+        (err) => setLocationText("Location Unavailable")
+      );
+    }
+  }, []);
 
   const handleEmergencyTrigger = async () => {
     setTriggering(true);
@@ -60,7 +69,7 @@ export default function EmergencyLanding() {
           </div>
           <span className="font-semibold text-neutral-800">HEALTH</span>
         </div>
-        <button className="text-sm text-primary-600 font-medium hover:text-primary-700">
+        <button onClick={() => router.push('/profile/emergency')} className="text-sm text-primary-600 font-medium hover:text-primary-700">
           My Profile
         </button>
       </GlassNavbar>
@@ -73,7 +82,7 @@ export default function EmergencyLanding() {
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span className="text-sm font-medium text-neutral-600">Auto-detecting location...</span>
+          <span className="text-sm font-medium text-neutral-600">{locationText}</span>
         </div>
 
         {/* Emergency trigger — the hero of this screen */}
@@ -126,7 +135,7 @@ export default function EmergencyLanding() {
 
         {/* Secondary Info cards */}
         <div className="w-full max-w-sm space-y-4">
-          <GlassCard level={1} padding="md" hover onClick={() => { /* navigate to medical records */ }}>
+          <GlassCard level={1} padding="md" hover onClick={() => router.push('/records')}>
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -142,7 +151,7 @@ export default function EmergencyLanding() {
             </div>
           </GlassCard>
 
-          <GlassCard level={1} padding="md" hover onClick={() => { /* navigate to emergency contacts */ }}>
+          <GlassCard level={1} padding="md" hover onClick={() => router.push('/profile/emergency')}>
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
