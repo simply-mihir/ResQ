@@ -3,9 +3,8 @@ services:
   - type: web
     name: emergency-service
     env: node
-    rootDir: services/emergency-service
-    buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npm run start:prod
+    buildCommand: npm install && npx prisma generate --schema=packages/db/prisma/schema.prisma && npm run build -w services/emergency-service
+    startCommand: npm run start:prod -w services/emergency-service
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -17,9 +16,8 @@ services:
   - type: web
     name: dispatch-service
     env: node
-    rootDir: services/dispatch-service
-    buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
+    buildCommand: npm install && npx prisma generate --schema=packages/db/prisma/schema.prisma && npm run build -w services/dispatch-service
+    startCommand: npm run start:prod -w services/dispatch-service
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -31,9 +29,8 @@ services:
   - type: web
     name: records-service
     env: node
-    rootDir: services/records-service
-    buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
+    buildCommand: npm install && npx prisma generate --schema=packages/db/prisma/schema.prisma && npm run build -w services/records-service
+    startCommand: npm run start:prod -w services/records-service
     envVars:
       - key: DATABASE_URL
         sync: false
