@@ -1,4 +1,10 @@
-const EMERGENCY_SERVICE_URL = process.env.NEXT_PUBLIC_EMERGENCY_API_URL || 'http://localhost:4001';
+const getUrl = (url: string | undefined, defaultUrl: string) => {
+  const raw = url || defaultUrl;
+  return raw.endsWith('/') ? raw.slice(0, -1) : raw;
+};
+
+const EMERGENCY_SERVICE_URL = getUrl(process.env.NEXT_PUBLIC_EMERGENCY_API_URL, 'http://localhost:4001');
+const DISPATCH_SERVICE_URL = getUrl(process.env.NEXT_PUBLIC_DISPATCH_API_URL, 'http://localhost:4003');
 
 export const api = {
   emergency: {
@@ -23,7 +29,6 @@ export const api = {
   },
   dispatch: {
     dispatchAmbulance: async (caseId: string) => {
-      const DISPATCH_SERVICE_URL = process.env.NEXT_PUBLIC_DISPATCH_API_URL || 'http://localhost:4003';
       const res = await fetch(`${DISPATCH_SERVICE_URL}/api/v1/dispatch/ambulance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,7 +40,6 @@ export const api = {
   },
   hospitals: {
     match: async (caseId: string) => {
-      const DISPATCH_SERVICE_URL = process.env.NEXT_PUBLIC_DISPATCH_API_URL || 'http://localhost:4003';
       const res = await fetch(`${DISPATCH_SERVICE_URL}/api/v1/hospitals/match?caseId=${caseId}`);
       if (!res.ok) throw new Error('Failed to get hospital matches');
       return res.json();
@@ -43,8 +47,8 @@ export const api = {
   },
   responder: {
     logQrScan: async (token: string, location: { lat: number, lng: number }) => {
-      const EMERGENCY_SERVICE_URL = process.env.NEXT_PUBLIC_EMERGENCY_API_URL || 'http://localhost:4001';
-      const res = await fetch(`${EMERGENCY_SERVICE_URL}/api/v1/emergency/scan/${token}`, {
+      // Fixed: Removed /api/v1/ to match @Controller('emergency') in backend
+      const res = await fetch(`${EMERGENCY_SERVICE_URL}/emergency/scan/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ location }),
