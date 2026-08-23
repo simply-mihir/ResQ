@@ -11,70 +11,75 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Persist stores on globalThis so they survive Next.js hot reloads in dev
-const globalForOtp = globalThis as unknown as {
-  __otpStore?: Map<string, { otp: string; expiresAt: number }>;
-  __pendingRegistrations?: Map<string, { name: string; phone?: string; expiresAt: number }>;
-  __otpCleanupStarted?: boolean;
-};
+import { cookies } from 'next/headers';
+import crypto from 'crypto';
 
-// In-memory OTP store: email → { otp, expiresAt }
-const otpStore = globalForOtp.__otpStore ??= new Map<string, { otp: string; expiresAt: number }>();
-
-// Pending registration store: email → { name, phone, expiresAt }
-const pendingRegistrations = globalForOtp.__pendingRegistrations ??= new Map<string, { name: string; phone?: string; expiresAt: number }>();
-
-// Clean up expired entries every 60s (only start once)
-if (!globalForOtp.__otpCleanupStarted) {
-  globalForOtp.__otpCleanupStarted = true;
-  setInterval(() => {
-    const now = Date.now();
-    for (const [k, v] of otpStore) if (v.expiresAt < now) otpStore.delete(k);
-    for (const [k, v] of pendingRegistrations) if (v.expiresAt < now) pendingRegistrations.delete(k);
-  }, 60_000);
-}
+const SECRET = process.env.OTP_SECRET || 'health-mvp-fallback-secret-12345';
 
 export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 export function storeOTP(email: string, otp: string): void {
-  otpStore.set(email.toLowerCase(), {
-    otp,
-    expiresAt: Date.now() + 5 * 60 * 1000,
+  const cookieStore = cookies();
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+  const hash = crypto.createHash('sha256').update(`${email.toLowerCase()}:${otp}:${expiresAt}:${SECRET}`).digest('hex');
+  
+  cookieStore.set('otp-session', `${expiresAt}:${hash}`, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 5 * 60, // 5 minutes
+    path: '/'
   });
 }
 
 export function verifyOTP(email: string, otp: string): boolean {
-  const stored = otpStore.get(email.toLowerCase());
-  if (!stored) return false;
-  if (stored.expiresAt < Date.now()) {
-    otpStore.delete(email.toLowerCase());
+  const cookieStore = cookies();
+  const session = cookieStore.get('otp-session')?.value;
+  if (!session) return false;
+
+  const [expiresStr, expectedHash] = session.split(':');
+  const expiresAt = parseInt(expiresStr, 10);
+  
+  if (Date.now() > expiresAt) {
+    cookieStore.delete('otp-session');
     return false;
   }
-  if (stored.otp !== otp) return false;
-  otpStore.delete(email.toLowerCase());
-  return true;
+
+  const actualHash = crypto.createHash('sha256').update(`${email.toLowerCase()}:${otp}:${expiresAt}:${SECRET}`).digest('hex');
+  if (actualHash === expectedHash) {
+    cookieStore.delete('otp-session');
+    return true;
+  }
+  return false;
 }
 
 export function storePendingRegistration(email: string, data: { name: string; phone?: string }): void {
-  pendingRegistrations.set(email.toLowerCase(), {
-    ...data,
-    expiresAt: Date.now() + 10 * 60 * 1000,
+  const cookieStore = cookies();
+  const payload = Buffer.from(JSON.stringify(data)).toString('base64');
+  cookieStore.set('pending-reg', payload, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 10 * 60, // 10 minutes
+    path: '/'
   });
 }
 
 export function getPendingRegistration(email: string): { name: string; phone?: string } | null {
-  const data = pendingRegistrations.get(email.toLowerCase());
-  if (!data || data.expiresAt < Date.now()) {
-    pendingRegistrations.delete(email.toLowerCase());
+  const cookieStore = cookies();
+  const session = cookieStore.get('pending-reg')?.value;
+  if (!session) return null;
+  
+  try {
+    return JSON.parse(Buffer.from(session, 'base64').toString('utf8'));
+  } catch {
     return null;
   }
-  return { name: data.name, phone: data.phone };
 }
 
 export function clearPendingRegistration(email: string): void {
-  pendingRegistrations.delete(email.toLowerCase());
+  const cookieStore = cookies();
+  cookieStore.delete('pending-reg');
 }
 
 export async function sendOTPEmail(email: string, otp: string): Promise<boolean> {
