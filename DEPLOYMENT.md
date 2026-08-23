@@ -50,9 +50,11 @@ After deployment, note the URLs for each service:
 
 ### 1. Import the monorepo to Vercel
 
-Create two Vercel projects, one for each app:
+Since all dashboards (Patient, Hospital, Admin) are now integrated into a single unified application, you only need to create **ONE** Vercel project:
+
 - **web-app**: Set root directory to `apps/web-app`
-- **hospital-dashboard**: Set root directory to `apps/hospital-dashboard`
+
+*(Note: If you have old Vercel projects for `hospital-dashboard` or `admin-panel`, they can be safely deleted or ignored.)*
 
 ### 2. Set Environment Variables on each Vercel project
 
