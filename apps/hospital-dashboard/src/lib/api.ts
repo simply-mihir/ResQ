@@ -1,5 +1,5 @@
-const EMERGENCY_SERVICE_URL = process.env.NEXT_PUBLIC_EMERGENCY_API_URL || 'http://localhost:4001';
-
+const EMERGENCY_SERVICE_URL = '/api/proxy/emergency';
+const DISPATCH_SERVICE_URL = '/api/proxy/dispatch';
 export const api = {
   emergency: {
     getActive: async () => {
@@ -13,7 +13,6 @@ export const api = {
   },
   dispatch: {
     acceptCase: async (caseId: string, hospitalId: string) => {
-      const DISPATCH_SERVICE_URL = process.env.NEXT_PUBLIC_DISPATCH_API_URL || 'http://localhost:4003';
       const res = await fetch(`${DISPATCH_SERVICE_URL}/api/v1/hospitals/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -138,7 +138,17 @@ export default function DashboardPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right">
-                    <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow-lg shadow-blue-500/20 transition-all opacity-0 group-hover:opacity-100">
+                    <button 
+                      onClick={async () => {
+                        try {
+                          await api.dispatch.acceptCase(c.id, 'test-hospital-id');
+                          fetchCases(); // Refresh list after accepting
+                        } catch (err) {
+                          alert('Failed to dispatch. Ensure the case is still active.');
+                        }
+                      }}
+                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow-lg shadow-blue-500/20 transition-all opacity-0 group-hover:opacity-100"
+                    >
                       Dispatch
                     </button>
                   </td>
