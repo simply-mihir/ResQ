@@ -51,9 +51,9 @@ const config: Config = {
         'neon-cyan': '0 0 15px rgba(0, 240, 255, 0.3)',
       },
       fontFamily: {
-        sans: ['var(--font-eleven-twenty)', 'sans-serif'], // Enforced across portal
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-        display: ['var(--font-eleven-twenty)', 'sans-serif'],
+        sans: ['var(--font-raleway)', 'sans-serif'], // Enforced across portal
+        display: ['var(--font-raleway)', 'sans-serif'],
+        mono: ['var(--font-geist-mono)'],
       },
       animation: {
         'pulse-emergency': 'pulse-emergency 2s ease-in-out infinite',
