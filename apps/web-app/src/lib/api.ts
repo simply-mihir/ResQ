@@ -1,10 +1,5 @@
-const getUrl = (url: string | undefined, defaultUrl: string) => {
-  const raw = url || defaultUrl;
-  return raw.endsWith('/') ? raw.slice(0, -1) : raw;
-};
-
-const EMERGENCY_SERVICE_URL = getUrl(process.env.NEXT_PUBLIC_EMERGENCY_API_URL, 'http://localhost:4001');
-const DISPATCH_SERVICE_URL = getUrl(process.env.NEXT_PUBLIC_DISPATCH_API_URL, 'http://localhost:4003');
+const EMERGENCY_SERVICE_URL = '/api/proxy/emergency';
+const DISPATCH_SERVICE_URL = '/api/proxy/dispatch';
 
 export const api = {
   emergency: {
