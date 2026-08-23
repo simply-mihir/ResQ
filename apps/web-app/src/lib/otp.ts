@@ -17,6 +17,9 @@ import crypto from 'crypto';
 const SECRET = process.env.OTP_SECRET || 'health-mvp-fallback-secret-12345';
 
 export function generateOTP(): string {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    return '123456'; // Universal demo OTP
+  }
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
@@ -84,6 +87,12 @@ export function clearPendingRegistration(email: string): void {
 
 export async function sendOTPEmail(email: string, otp: string): Promise<boolean> {
   try {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      console.warn(`[OTP] Missing GMAIL_USER or GMAIL_APP_PASSWORD environment variables.`);
+      console.warn(`[OTP] BYPASS: The demo OTP for ${email} is ${otp}`);
+      return true; // Simulate success so the UI proceeds
+    }
+
     await transporter.sendMail({
       from: `"ResQ Platform" <${process.env.GMAIL_USER}>`,
       to: email,
