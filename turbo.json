@@ -12,5 +12,14 @@
       "cache": false,
       "persistent": true
     }
-  }
+  },
+  "globalEnv": [
+    "DATABASE_URL",
+    "DIRECT_URL",
+    "GMAIL_USER",
+    "GMAIL_APP_PASSWORD",
+    "NEXT_PUBLIC_EMERGENCY_API_URL",
+    "NEXT_PUBLIC_DISPATCH_API_URL",
+    "NEXT_PUBLIC_RECORDS_API_URL"
+  ]
 }
