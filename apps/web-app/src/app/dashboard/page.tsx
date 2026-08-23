@@ -52,7 +52,7 @@ export default function PatientDashboard() {
               <span className="text-neon-lime text-xs tracking-[0.3em] font-bold uppercase">System Active</span>
             </div>
             <h1 className="text-4xl md:text-5xl text-white tracking-wide glow-text">
-              Welcome, <span className="text-neon-lime">{user?.name?.split(' ')[0] || 'Patient'}</span>
+              Welcome, <span className="text-neon-lime">{user?.name || 'Patient'}</span>
             </h1>
             <p className="text-neutral-400 mt-2 tracking-wider">Your personal health and emergency network.</p>
           </div>
