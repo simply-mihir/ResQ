@@ -60,7 +60,7 @@ The MVP is built using a microservices architecture. Three distinct Next.js fron
 graph TD
     Client[Client Browsers]
     
-    subgraph Frontend (Vercel)
+    subgraph Frontend["Frontend (Vercel)"]
         NextApp[Next.js Apps]
         Client -->|HTTPS| NextApp
         NextApp --> PatientPortal[Patient Dashboard]
@@ -68,7 +68,7 @@ graph TD
         NextApp --> AdminPortal[Admin Setup]
     end
     
-    subgraph Backend Microservices (Render)
+    subgraph Backend["Backend Microservices (Render)"]
         PatientPortal -.-> Gateway[API Gateway]
         HospitalPortal -.-> Gateway
         AdminPortal -.-> Gateway
@@ -79,7 +79,7 @@ graph TD
         Gateway --> NotificationService[Notification Service]
     end
     
-    subgraph Data & Persistence Layer
+    subgraph DataLayer["Data & Persistence Layer"]
         EmergencyService --> Prisma[Prisma ORM]
         DispatchService --> Prisma
         RecordsService --> Prisma
