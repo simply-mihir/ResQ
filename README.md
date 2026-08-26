@@ -8,7 +8,7 @@
       <img src="https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo">
     </a>
     <a href="LICENSE">
-      <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
+      <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" alt="License">
     </a>
   </p>
 
@@ -362,7 +362,7 @@ Render deployments are managed entirely as code via the `render.yaml` specificat
 
 ## 11. License
 
-MIT — see [LICENSE](LICENSE) for details.
+GNU General Public License v3.0 (GPLv3) — see [LICENSE](LICENSE) for details.
 
 ---
 
