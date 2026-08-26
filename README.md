@@ -21,6 +21,19 @@
 
 <br />
 
+## Table of Contents
+- [Executive Summary](#executive-summary)
+- [System Architecture](#system-architecture)
+- [Application Ecosystem](#application-ecosystem)
+- [Core Workflows & Interaction Models](#core-workflows--interaction-models)
+- [Domain Services Detail](#domain-services-detail)
+- [Technology Stack](#technology-stack)
+- [Comprehensive Use Case Matrix](#comprehensive-use-case-matrix)
+- [Local Development Setup](#local-development-setup)
+- [Deployment Strategy](#deployment-strategy)
+
+---
+
 ## Executive Summary
 
 ResQ is a highly available, microservices-driven emergency intelligence platform engineered to bridge the communication latency between patients, first responders, and hospital networks. It accelerates patient admission via real-time geolocation routing, automated medical profiling, and immediate dispatcher coordination.
