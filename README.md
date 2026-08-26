@@ -7,6 +7,9 @@
     <a href="https://health-mvp-web-app-zeta.vercel.app/">
       <img src="https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo">
     </a>
+    <a href="LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
+    </a>
   </p>
 
   <p>
@@ -51,6 +54,7 @@ By bridging the communication latency between patients, first responders, and ho
 8. [Environment Configuration](#8-environment-configuration)
 9. [Deployment Guide](#9-deployment-guide)
 10. [Production Notes](#10-production-notes)
+11. [License](#11-license)
 
 ---
 
@@ -353,6 +357,12 @@ Render deployments are managed entirely as code via the `render.yaml` specificat
 
 - **Geospatial Scaling:** Currently, distance is calculated using the Haversine formula in-memory within the `Emergency Service`. As the hospital network grows globally, this should be offloaded to **PostGIS** for native spatial indexing and querying.
 - **Message Broker:** The API Gateway currently orchestrates inter-service communication. Introducing **RabbitMQ or Apache Kafka** would decouple these microservices further, allowing the `Notification Service` to act purely on event consumption rather than direct HTTP invocations.
+
+---
+
+## 11. License
+
+MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
