@@ -7,7 +7,7 @@
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![Nodemailer](https://img.shields.io/badge/Nodemailer-SMTP-blue?style=for-the-badge)
 
-A next-generation emergency intelligence MVP designed to seamlessly connect patients, hospitals, and dispatchers in real-time. ResQ replaces fragmented emergency response systems with a unified, high-speed, serverless web application that prioritizes rapid triage and geolocation routing.
+A next-generation emergency intelligence MVP designed to seamlessly connect patients, hospitals, and dispatchers in real-time. ResQ replaces fragmented emergency response systems with a robust microservices architecture and high-speed web interfaces that prioritize rapid triage and geolocation routing.
 
 **Live Deployment:** [https://health-mvp-web-app-zeta.vercel.app/](https://health-mvp-web-app-zeta.vercel.app/)
 
@@ -54,27 +54,35 @@ sequenceDiagram
 
 ## System Architecture
 
-The MVP is built as a unified Next.js application, integrating three distinct frontends into a single scalable codebase powered by serverless API routes.
+The MVP is built using a microservices architecture. Three distinct Next.js frontends communicate with a NestJS-powered backend suite composed of specialized services, all deployed on Render.
 
 ```mermaid
 graph TD
     Client[Client Browsers]
-    NextApp[Next.js Unified Application]
     
-    Client -->|HTTPS| NextApp
-    
-    subgraph Web Application Layer
+    subgraph Frontend (Vercel)
+        NextApp[Next.js Apps]
+        Client -->|HTTPS| NextApp
         NextApp --> PatientPortal[Patient Dashboard]
         NextApp --> HospitalPortal[Hospital Portal]
         NextApp --> AdminPortal[Admin Setup]
+    end
+    
+    subgraph Backend Microservices (Render)
+        PatientPortal -.-> Gateway[API Gateway]
+        HospitalPortal -.-> Gateway
+        AdminPortal -.-> Gateway
         
-        PatientPortal -.-> API[Next.js Serverless API Routes]
-        HospitalPortal -.-> API
-        AdminPortal -.-> API
+        Gateway --> EmergencyService[Emergency Service]
+        Gateway --> DispatchService[Dispatch Service]
+        Gateway --> RecordsService[Records Service]
+        Gateway --> NotificationService[Notification Service]
     end
     
     subgraph Data & Persistence Layer
-        API --> Prisma[Prisma ORM]
+        EmergencyService --> Prisma[Prisma ORM]
+        DispatchService --> Prisma
+        RecordsService --> Prisma
         Prisma --> DB[(Supabase PostgreSQL)]
     end
 ```
@@ -85,12 +93,13 @@ graph TD
 
 The platform is engineered using modern, scalable, and highly performant technologies:
 
-- ![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white) — Full-stack React framework
-- ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) — Utility-first styling and glassmorphism UI
+- ![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white) — React frameworks for frontends
+- ![NestJS](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white) — Microservices Backend framework
+- ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) — Utility-first styling
 - ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white) — Type-safe Database ORM
 - ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white) — Serverless PostgreSQL database
-- ![Nodemailer](https://img.shields.io/badge/Nodemailer-SMTP-blue?style=for-the-badge) — Secure OTP email delivery
-- ![Vercel](https://img.shields.io/badge/Vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white) — Serverless deployment & Edge caching
+- ![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white) — Backend Microservices Hosting
+- ![Vercel](https://img.shields.io/badge/Vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white) — Frontend deployment & Edge caching
 
 ---
 
@@ -133,6 +142,7 @@ Navigate to `http://localhost:3000` to access the application.
 
 ## Deployment Details
 
-This application is continuously deployed via **Vercel**.
-- **Stateless Architecture:** The OTP authentication mechanism was explicitly engineered using secure HTTP-only cookies to ensure compatibility with Vercel's ephemeral Serverless Functions.
-- **Turborepo Caching:** The repository is configured to cache builds securely, passing environment variables seamlessly through `turbo.json`.
+This application utilizes a split-deployment strategy:
+- **Frontend Apps (Vercel):** The Next.js client applications are deployed on Vercel to take advantage of edge caching and high-performance delivery.
+- **Backend Microservices (Render):** The NestJS backend services (Emergency, Dispatch, Records, Gateway) are hosted on Render as persistent Web Services via the `render.yaml` configuration.
+- **Turborepo Caching:** The monorepo uses Turborepo to efficiently build and deploy only the changed services or applications.
