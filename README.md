@@ -1,148 +1,137 @@
-# ResQ: Next-Gen Emergency Intelligence
+# ResQ: Emergency Intelligence Platform
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://health-mvp-web-app-zeta.vercel.app/)
-![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Nodemailer](https://img.shields.io/badge/Nodemailer-SMTP-blue?style=for-the-badge)
+[![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)](#)
+[![NestJS](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](#)
+[![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)](#)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](#)
 
-A next-generation emergency intelligence MVP designed to seamlessly connect patients, hospitals, and dispatchers in real-time. ResQ replaces fragmented emergency response systems with a robust microservices architecture and high-speed web interfaces that prioritize rapid triage and geolocation routing.
+## Executive Summary
 
-**Live Deployment:** [https://health-mvp-web-app-zeta.vercel.app/](https://health-mvp-web-app-zeta.vercel.app/)
-
----
-
-## The Workflow
-
-ResQ operates on a three-tier architecture serving Admins, Hospitals, and Patients. Here is the complete workflow of the Minimum Viable Product:
-
-```mermaid
-sequenceDiagram
-    participant Patient
-    participant ResQ System
-    participant Hospital
-    
-    Patient->>ResQ System: Registers with Medical Profile
-    Hospital->>ResQ System: Admin Onboards & Dispatchers Login
-    
-    Note over Patient,Hospital: Emergency Event Occurs
-    
-    Patient->>ResQ System: Triggers SOS (Full Triage)
-    ResQ System->>ResQ System: Captures GPS Coordinates
-    ResQ System->>Hospital: Routes Alert to Nearest Hospital
-    Hospital->>ResQ System: Views Patient Location & Vitals
-    Hospital->>Patient: Dispatches Ambulance
-```
-
-### 1. System Administration
-- **Infrastructure Setup:** The platform requires an initial setup by a System Administrator. The admin accesses the highly secured `Admin Setup` portal.
-- **Hospital Onboarding:** The administrator registers participating hospital networks into the database, initializing their emergency capacities and generating their internal credentials.
-
-### 2. Hospital Operations
-- **Secure Authentication:** Hospital dispatchers log into the `Hospital Portal` using their official email. The system uses a **Stateless OTP Protocol** (One-Time Password sent via email) to authenticate the session without relying on static passwords.
-- **Emergency Dashboard:** Once logged in, dispatchers are presented with a live mission-control dashboard. They monitor active network statuses and stand ready to receive incoming trauma alerts.
-- **Dispatch Management:** When an SOS is received, the dashboard displays the exact location and medical profile of the patient, allowing the hospital to instantly dispatch an ambulance.
-
-### 3. Patient Experience
-- **Frictionless Registration:** Patients sign up via the `Patient Portal` using the same stateless OTP system.
-- **Medical Profiling:** Upon registration, the database links vital information (e.g., Blood Type: O+, Allergies: None) to the patient's profile.
-- **Emergency SOS (Full Triage):** In a crisis, the patient presses the SOS button on their dashboard.
-- **Geolocation & Routing:** The browser instantly captures the patient's precise GPS coordinates. The system pairs these coordinates with the patient's medical profile and routes a critical alert to the nearest available hospital.
-
----
+ResQ is a highly available, microservices-driven emergency intelligence platform engineered to bridge the communication latency between patients, first responders, and hospital networks. By replacing fragmented legacy emergency response protocols with a unified digital triage system, ResQ accelerates patient admission via real-time geolocation routing, automated medical profiling, and immediate dispatcher coordination.
 
 ## System Architecture
 
-The MVP is built using a microservices architecture. Three distinct Next.js frontends communicate with a NestJS-powered backend suite composed of specialized services, all deployed on Render.
+The platform adopts a distributed microservices architecture to ensure high availability, fault tolerance, and independent scalability of critical domains. The frontend ecosystem communicates via a centralized API Gateway, which orchestrates downstream requests to domain-specific backend services.
 
 ```mermaid
-graph TD
-    Client[Client Browsers]
-    
-    subgraph Frontend["Frontend (Vercel)"]
-        NextApp[Next.js Apps]
-        Client -->|HTTPS| NextApp
-        NextApp --> PatientPortal[Patient Dashboard]
-        NextApp --> HospitalPortal[Hospital Portal]
-        NextApp --> AdminPortal[Admin Setup]
+graph TB
+    subgraph ClientLayer["Client Layer (Vercel Edge)"]
+        WebApp["Patient Web App"]
+        HospitalDash["Hospital Dashboard"]
+        AdminPanel["Admin Portal"]
     end
-    
-    subgraph Backend["Backend Microservices (Render)"]
-        PatientPortal -.-> Gateway[API Gateway]
-        HospitalPortal -.-> Gateway
-        AdminPortal -.-> Gateway
-        
-        Gateway --> EmergencyService[Emergency Service]
-        Gateway --> DispatchService[Dispatch Service]
-        Gateway --> RecordsService[Records Service]
-        Gateway --> NotificationService[Notification Service]
+
+    subgraph APIGateway["API Gateway (Render)"]
+        Gateway["NestJS API Gateway"]
     end
-    
-    subgraph DataLayer["Data & Persistence Layer"]
-        EmergencyService --> Prisma[Prisma ORM]
-        DispatchService --> Prisma
-        RecordsService --> Prisma
-        Prisma --> DB[(Supabase PostgreSQL)]
+
+    subgraph CoreServices["Backend Microservices (Render)"]
+        EmergencySvc["Emergency Service"]
+        DispatchSvc["Dispatch Service"]
+        RecordsSvc["Records Service"]
+        NotificationSvc["Notification Service"]
     end
+
+    subgraph DataLayer["Persistence Layer"]
+        Prisma["Prisma ORM"]
+        Postgres[(Supabase PostgreSQL)]
+    end
+
+    WebApp -->|HTTPS / REST| Gateway
+    HospitalDash -->|HTTPS / REST| Gateway
+    AdminPanel -->|HTTPS / REST| Gateway
+
+    Gateway --> EmergencySvc
+    Gateway --> DispatchSvc
+    Gateway --> RecordsSvc
+    Gateway --> NotificationSvc
+
+    EmergencySvc --> Prisma
+    DispatchSvc --> Prisma
+    RecordsSvc --> Prisma
+    Prisma --> Postgres
 ```
 
----
+## Domain Services
+
+The backend is composed of isolated NestJS applications, each responsible for a distinct bounded context:
+
+- **Emergency Service**: Handles SOS triggers, geospatial triage, and real-time patient routing to the nearest capable facility.
+- **Dispatch Service**: Manages hospital capacity, ambulance fleet allocation, and dispatcher assignment.
+- **Records Service**: Maintains secure access to electronic health records, patient medical profiles, and historical data.
+- **Notification Service**: Orchestrates delivery of critical alerts, OTP authentication, and status updates via email and SMS protocols.
+- **API Gateway**: Acts as the single entry point for all client applications, handling request routing, rate limiting, and centralized authentication validation.
+
+## Emergency Triage Workflow
+
+When an emergency event is triggered, the system executes a rapid orchestration of services to ensure immediate dispatch.
+
+```mermaid
+sequenceDiagram
+    participant Patient as Patient Web App
+    participant Gateway as API Gateway
+    participant Emergency as Emergency Service
+    participant Dispatch as Dispatch Service
+    participant Hospital as Hospital Dashboard
+
+    Patient->>Gateway: Trigger SOS (Coordinates & Profile ID)
+    Gateway->>Emergency: Route Triage Request
+    Emergency->>Emergency: Calculate Nearest Hospital (Haversine)
+    Emergency->>Dispatch: Request Ambulance Allocation
+    Dispatch->>Hospital: Push High-Priority Alert
+    Hospital-->>Dispatch: Acknowledge & Dispatch Unit
+    Dispatch-->>Emergency: Confirm Allocation
+    Emergency-->>Gateway: Return Dispatch Status
+    Gateway-->>Patient: Display ETA & Live Updates
+```
 
 ## Technology Stack
 
-The platform is engineered using modern, scalable, and highly performant technologies:
+The platform is engineered using a modern, scalable, and highly performant stack:
 
-- ![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white) — React frameworks for frontends
-- ![NestJS](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white) — Microservices Backend framework
-- ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) — Utility-first styling
-- ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white) — Type-safe Database ORM
-- ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white) — Serverless PostgreSQL database
-- ![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white) — Backend Microservices Hosting
-- ![Vercel](https://img.shields.io/badge/Vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white) — Frontend deployment & Edge caching
-
----
+- **Frontend**: Next.js 14, React 18, TailwindCSS.
+- **Backend**: NestJS, Node.js 20.
+- **Database & ORM**: PostgreSQL (Supabase), Prisma.
+- **Architecture**: Turborepo (Monorepo), Microservices.
+- **Infrastructure**: Vercel (Frontend), Render (Backend Web Services).
 
 ## Local Development Setup
 
 To run the platform locally, follow these steps:
 
-### 1. Clone & Install
+### 1. Repository Initialization
 ```bash
-git clone https://github.com/simply-mihir/health-mvp.git
+git clone https://github.com/simply-mihir/ResQ.git
 cd health-mvp
 npm install
 ```
 
-### 2. Environment Variables
-Create a `.env` file in the `apps/web-app` directory and provide the necessary keys:
+### 2. Environment Configuration
+Create a `.env` file in the respective service and application directories. The primary variables required are:
+
 ```env
-# Supabase PostgreSQL Connection
-DATABASE_URL="postgresql://postgres.[ID]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.[ID]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
-
-# SMTP Configuration for OTP Authentication
+DATABASE_URL="postgresql://[USER]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://[USER]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
 GMAIL_USER="your.email@gmail.com"
-GMAIL_APP_PASSWORD="16-character-app-password"
+GMAIL_APP_PASSWORD="your-app-password"
 ```
-*(Note: If `GMAIL_USER` is missing in development, the system securely bypasses email delivery and defaults the OTP to `123456` for testing purposes).*
 
-### 3. Initialize Database
+### 3. Database Hydration
 ```bash
-npx prisma generate
+npx prisma generate --schema=packages/db/prisma/schema.prisma
 ```
 
-### 4. Run the Application
+### 4. Development Server Execution
+The project uses Turborepo for orchestrated builds and execution.
 ```bash
 npm run dev
 ```
-Navigate to `http://localhost:3000` to access the application.
+Navigate to `http://localhost:3000` to access the primary web application.
 
----
+## Deployment Strategy
 
-## Deployment Details
+The application leverages a hybrid deployment strategy optimized for specific operational requirements:
 
-This application utilizes a split-deployment strategy:
-- **Frontend Apps (Vercel):** The Next.js client applications are deployed on Vercel to take advantage of edge caching and high-performance delivery.
-- **Backend Microservices (Render):** The NestJS backend services (Emergency, Dispatch, Records, Gateway) are hosted on Render as persistent Web Services via the `render.yaml` configuration.
-- **Turborepo Caching:** The monorepo uses Turborepo to efficiently build and deploy only the changed services or applications.
+- **Edge Delivery**: Client applications are deployed on Vercel to utilize edge caching, global CDN distribution, and optimized asset delivery.
+- **Compute Allocation**: Backend NestJS microservices are hosted as persistent Node.js instances on Render, ensuring continuous execution for background tasks, and complex routing algorithms without cold-start penalties.
