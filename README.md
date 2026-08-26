@@ -1,6 +1,6 @@
 <div align="center">
 
-# RESQ
+# ResQ
 ### Enterprise-Grade Emergency Intelligence Platform
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://health-mvp-web-app-zeta.vercel.app/)
