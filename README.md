@@ -1,4 +1,7 @@
-# ResQ: Emergency Intelligence Platform
+<div align="center">
+
+# RESQ
+### Enterprise-Grade Emergency Intelligence Platform
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://health-mvp-web-app-zeta.vercel.app/)
 [![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)](#)
@@ -7,9 +10,17 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](#)
 [![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](#)
 
+*Replacing fragmented legacy emergency response protocols with a unified digital triage system.*
+
+</div>
+
+<br />
+
 ## Executive Summary
 
-ResQ is a highly available, microservices-driven emergency intelligence platform engineered to bridge the communication latency between patients, first responders, and hospital networks. By replacing fragmented legacy emergency response protocols with a unified digital triage system, ResQ accelerates patient admission via real-time geolocation routing, automated medical profiling, and immediate dispatcher coordination.
+ResQ is a highly available, microservices-driven emergency intelligence platform engineered to bridge the communication latency between patients, first responders, and hospital networks. It accelerates patient admission via real-time geolocation routing, automated medical profiling, and immediate dispatcher coordination.
+
+---
 
 ## System Architecture
 
@@ -17,26 +28,32 @@ The platform adopts a distributed microservices architecture to ensure high avai
 
 ```mermaid
 graph TB
+    %% Styling Classes
+    classDef client fill:#0a0a0a,stroke:#333,stroke-width:1px,color:#ffffff
+    classDef gateway fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#ffffff
+    classDef service fill:#e53e3e,stroke:#c53030,stroke-width:2px,color:#ffffff
+    classDef db fill:#38a169,stroke:#2f855a,stroke-width:2px,color:#ffffff
+    
     subgraph ClientLayer["Client Layer (Vercel Edge)"]
-        WebApp["Patient Web App"]
-        HospitalDash["Hospital Dashboard"]
-        AdminPanel["Admin Portal"]
+        WebApp["Patient Web App"]:::client
+        HospitalDash["Hospital Dashboard"]:::client
+        AdminPanel["Admin Portal"]:::client
     end
 
     subgraph APIGateway["API Gateway (Render)"]
-        Gateway["NestJS API Gateway"]
+        Gateway["NestJS API Gateway"]:::gateway
     end
 
     subgraph CoreServices["Backend Microservices (Render)"]
-        EmergencySvc["Emergency Service"]
-        DispatchSvc["Dispatch Service"]
-        RecordsSvc["Records Service"]
-        NotificationSvc["Notification Service"]
+        EmergencySvc["Emergency Service"]:::service
+        DispatchSvc["Dispatch Service"]:::service
+        RecordsSvc["Records Service"]:::service
+        NotificationSvc["Notification Service"]:::service
     end
 
     subgraph DataLayer["Persistence Layer"]
-        Prisma["Prisma ORM"]
-        Postgres[(Supabase PostgreSQL)]
+        Prisma["Prisma ORM"]:::db
+        Postgres[(Supabase PostgreSQL)]:::db
     end
 
     WebApp -->|HTTPS / REST| Gateway
@@ -54,16 +71,7 @@ graph TB
     Prisma --> Postgres
 ```
 
-## Comprehensive Use Case Matrix
-
-The platform is designed to serve four primary actors across its ecosystem.
-
-| Actor | Primary Interface | Key Capabilities |
-| :--- | :--- | :--- |
-| **Patient** | Web App | One-tap SOS triage, manage electronic health records, view family members, generate personalized Medical QR codes, manage appointments. |
-| **First Responder** | Web App (Responder Mode) | Scan patient QR codes, retrieve immediate critical medical history (blood type, allergies), update patient triage status in transit. |
-| **Hospital Dispatcher** | Hospital Dashboard | Monitor incoming triage queues, allocate bed capacity, review inbound patient records, confirm dispatch availability. |
-| **System Administrator** | Admin Portal | Monitor system-wide analytics, track average response times, onboard new hospital nodes, manage global configuration. |
+---
 
 ## Application Ecosystem
 
@@ -96,21 +104,37 @@ The primary critical path when an emergency event occurs. The system calculates 
 
 ```mermaid
 sequenceDiagram
+    autonumber
+    
     participant Patient as Patient Web App
     participant Gateway as API Gateway
     participant Emergency as Emergency Service
+    participant RecordsSvc as Records Service
     participant Dispatch as Dispatch Service
     participant Hospital as Hospital Dashboard
 
     Patient->>Gateway: Trigger SOS (GPS Coordinates & Profile ID)
     Gateway->>Emergency: Route Triage Request
+    
+    rect rgb(240, 248, 255)
+    Note over Emergency,RecordsSvc: Data Enrichment Phase
     Emergency->>RecordsSvc: Fetch Patient Medical Profile
     RecordsSvc-->>Emergency: Return Profile (Allergies, Blood Type)
+    end
+    
+    rect rgb(255, 240, 245)
+    Note over Emergency,Dispatch: Algorithmic Routing Phase
     Emergency->>Emergency: Calculate Nearest Capable Hospital (Haversine)
     Emergency->>Dispatch: Request Unit/Bed Allocation
+    end
+    
+    rect rgb(240, 255, 240)
+    Note over Dispatch,Hospital: Dispatch & Allocation Phase
     Dispatch->>Hospital: Push High-Priority Alert (WebSockets)
     Hospital-->>Dispatch: Acknowledge & Allocate Bed
     Dispatch-->>Emergency: Confirm Allocation
+    end
+    
     Emergency-->>Gateway: Return Dispatch Status & ETA
     Gateway-->>Patient: Display ETA & Live Updates
 ```
@@ -120,22 +144,27 @@ A specialized workflow allowing paramedics or bystanders to pull life-saving dat
 
 ```mermaid
 graph TD
-    Start((Responder Scans QR)) --> AuthCheck{Is Responder Authenticated?}
+    classDef default fill:#f7fafc,stroke:#cbd5e0,stroke-width:1px,color:#2d3748
+    classDef decision fill:#ebf8ff,stroke:#3182ce,stroke-width:2px,color:#2c5282
+    classDef secure fill:#e6fffa,stroke:#319795,stroke-width:2px,color:#234e52
+    classDef terminal fill:#fff5f5,stroke:#e53e3e,stroke-width:2px,color:#742a2a
+
+    Start((Responder Scans QR)):::decision --> AuthCheck{Is Responder Authenticated?}:::decision
     
-    AuthCheck -->|No| BasicData[Display Basic Vitals & Blood Type]
-    AuthCheck -->|Yes| FullAuth[Initiate Secure Request via Gateway]
+    AuthCheck -->|No| BasicData[Display Basic Vitals & Blood Type]:::default
+    AuthCheck -->|Yes| FullAuth[Initiate Secure Request via Gateway]:::secure
     
-    FullAuth --> ValidateToken[Gateway Validates JWT]
-    ValidateToken --> RequestRecords[Records Service Queries DB]
+    FullAuth --> ValidateToken[Gateway Validates JWT]:::secure
+    ValidateToken --> RequestRecords[Records Service Queries DB]:::secure
     
-    RequestRecords --> PayloadBuilder[Build Encrypted Medical Payload]
-    PayloadBuilder --> Deliver[Deliver Complete Health Record to Device]
+    RequestRecords --> PayloadBuilder[Build Encrypted Medical Payload]:::secure
+    PayloadBuilder --> Deliver[Deliver Complete Health Record to Device]:::secure
     
-    Deliver --> Action{Responder Action}
-    Action -->|Update Status| LogStatus[Log Triage Status]
-    Action -->|View History| DisplayHistory[Display Comprehensive History]
+    Deliver --> Action{Responder Action}:::decision
+    Action -->|Update Status| LogStatus[Log Triage Status]:::default
+    Action -->|View History| DisplayHistory[Display Comprehensive History]:::default
     
-    BasicData --> End((End))
+    BasicData --> End((End)):::terminal
     LogStatus --> End
     DisplayHistory --> End
 ```
@@ -145,14 +174,18 @@ The stateless authentication and matching engine leverages a secure OTP protocol
 
 ```mermaid
 graph LR
-    User[User/Patient] -->|Request Login| Gateway[API Gateway]
-    Gateway --> AuthModule[Authentication Module]
-    AuthModule --> GenOTP[Generate Secure OTP]
-    GenOTP --> NotifySvc[Notification Service]
-    NotifySvc -->|Send Email/SMS| SMTP[Nodemailer / SMTP]
+    classDef user fill:#edf2f7,stroke:#a0aec0,stroke-width:2px,color:#1a202c
+    classDef system fill:#ebf4ff,stroke:#5a67d8,stroke-width:2px,color:#434190
+    classDef action fill:#f0fff4,stroke:#48bb78,stroke-width:2px,color:#276749
+    
+    User[User/Patient]:::user -->|Request Login| Gateway[API Gateway]:::system
+    Gateway --> AuthModule[Authentication Module]:::system
+    AuthModule --> GenOTP[Generate Secure OTP]:::system
+    GenOTP --> NotifySvc[Notification Service]:::system
+    NotifySvc -->|Send Email/SMS| SMTP[Nodemailer / SMTP]:::action
     SMTP --> User
     User -->|Submit OTP| Gateway
-    Gateway -->|Validate| GenSession[Generate HTTP-Only Session Cookie]
+    Gateway -->|Validate| GenSession[Generate HTTP-Only Session Cookie]:::action
 ```
 
 ---
@@ -167,6 +200,8 @@ The backend relies on isolated NestJS microservices:
 - **Notification Service**: The communication orchestrator. Handles asynchronous message delivery decoupled from critical path operations.
 - **API Gateway**: The traffic controller. Normalizes client requests, enforces rate limiting, and validates stateless session tokens before internal routing.
 
+---
+
 ## Technology Stack
 
 The platform is engineered using an enterprise-grade technology stack:
@@ -176,6 +211,21 @@ The platform is engineered using an enterprise-grade technology stack:
 - **Data Persistence**: Prisma ORM, Supabase (Serverless PostgreSQL).
 - **Monorepo Architecture**: Turborepo, pnpm workspaces.
 - **Infrastructure**: Vercel (Edge Functions & Hosting), Render (Persistent Web Services).
+
+---
+
+## Comprehensive Use Case Matrix
+
+The platform is designed to serve four primary actors across its ecosystem.
+
+| Actor | Primary Interface | Key Capabilities |
+| :--- | :--- | :--- |
+| **Patient** | Web App | One-tap SOS triage, manage electronic health records, view family members, generate personalized Medical QR codes, manage appointments. |
+| **First Responder** | Web App (Responder Mode) | Scan patient QR codes, retrieve immediate critical medical history (blood type, allergies), update patient triage status in transit. |
+| **Hospital Dispatcher** | Hospital Dashboard | Monitor incoming triage queues, allocate bed capacity, review inbound patient records, confirm dispatch availability. |
+| **System Administrator** | Admin Portal | Monitor system-wide analytics, track average response times, onboard new hospital nodes, manage global configuration. |
+
+---
 
 ## Local Development Setup
 
@@ -210,6 +260,8 @@ The project uses Turborepo for parallel, cached builds and execution.
 npm run dev
 ```
 Navigate to `http://localhost:3000` to access the primary web application.
+
+---
 
 ## Deployment Strategy
 
