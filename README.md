@@ -88,17 +88,21 @@ The primary interface for individuals and their families.
 - **Medical QR Vault**: Dynamically generates secure QR codes encoding vital patient history.
 - **Family Linking**: Connects profiles to allow family members to track statuses and appointments.
 - **First Responder Mode**: Allows verified medical professionals to securely scan patient QR codes.
+- **AI-Powered Medical Records**: Automatic extraction and structuring of uploaded health documents via AI OCR confidence modeling.
+- **Follow-Up & Diagnostics**: Seamless booking of recommended diagnostic tests post-discharge.
 
 ### 2. Hospital Dashboard
 The mission-control center for hospital dispatchers and administrators.
 - **Bed Management Engine**: Real-time allocation and tracking of trauma, ICU, and general ward capacities.
 - **Live Triage Queue**: Websocket-driven feed of incoming SOS requests routed to the specific hospital.
 - **Secure Records Access**: Role-based access control (RBAC) to view incoming patient medical profiles prior to arrival.
+- **Ambulance Fleet Tracking**: Track real-time live transit status (en route, arrived) of dispatched ambulance fleets.
 
 ### 3. Administrator Portal
 The global observability and management node.
 - **Network Analytics**: Aggregates latency metrics, triage volumes, and hospital capacities.
-- **Node Onboarding**: Interface to securely register new hospitals into the ResQ network.
+- **Node Onboarding**: Interface to securely register new hospitals and diagnostic centres into the ResQ network.
+- **Audit Log Monitoring**: Full oversight of system-wide access logs for HIPAA and GDPR compliance auditing.
 
 ---
 
@@ -200,8 +204,8 @@ graph LR
 The backend relies on isolated NestJS microservices:
 
 - **Emergency Service**: The geospatial routing engine. Evaluates patient coordinates against a cached spatial index of hospital locations.
-- **Dispatch Service**: The resource lock manager. Prevents race conditions when multiple incidents attempt to claim the same hospital bed or ambulance.
-- **Records Service**: The data vault. Ensures HIPAA/GDPR-compliant access to Patient Health Information (PHI).
+- **Dispatch Service**: The resource lock manager. Prevents race conditions when multiple incidents attempt to claim the same hospital bed or ambulance. Handles ambulance status flow logic (`TRIGGERED` -> `EN_ROUTE` -> `ARRIVED`).
+- **Records Service**: The data vault. Ensures HIPAA/GDPR-compliant access to Patient Health Information (PHI). Utilizes AI extraction algorithms to parse prescription documents and stores full, immutable Audit Logs.
 - **Notification Service**: The communication orchestrator. Handles asynchronous message delivery decoupled from critical path operations.
 - **API Gateway**: The traffic controller. Normalizes client requests, enforces rate limiting, and validates stateless session tokens before internal routing.
 
@@ -221,14 +225,16 @@ The platform is engineered using an enterprise-grade technology stack:
 
 ## Comprehensive Use Case Matrix
 
-The platform is designed to serve four primary actors across its ecosystem.
+The platform is designed to serve six distinct actors across its ecosystem.
 
 | Actor | Primary Interface | Key Capabilities |
 | :--- | :--- | :--- |
-| **Patient** | Web App | One-tap SOS triage, manage electronic health records, view family members, generate personalized Medical QR codes, manage appointments. |
+| **Patient** | Web App | One-tap SOS triage, manage electronic health records, view family members, generate personalized Medical QR codes, book diagnostics. |
 | **First Responder** | Web App (Responder Mode) | Scan patient QR codes, retrieve immediate critical medical history (blood type, allergies), update patient triage status in transit. |
+| **Ambulance Operator** | Mobile/Web App | Receive hospital dispatch assignments, update live transit status (en route, arrived), navigate via optimized routes. |
 | **Hospital Dispatcher** | Hospital Dashboard | Monitor incoming triage queues, allocate bed capacity, review inbound patient records, confirm dispatch availability. |
-| **System Administrator** | Admin Portal | Monitor system-wide analytics, track average response times, onboard new hospital nodes, manage global configuration. |
+| **Diagnostic Centre** | Partner API / Web | Receive follow-up recommendations, update wait times, schedule post-discharge patient tests. |
+| **System Administrator** | Admin Portal | Monitor system-wide analytics, onboard new hospital nodes, manage global configuration, enforce full system audit logging. |
 
 ---
 
