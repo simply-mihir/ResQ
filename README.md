@@ -5,10 +5,15 @@
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://health-mvp-web-app-zeta.vercel.app/)
 [![Next JS](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)](#)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#)
 [![NestJS](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](#)
+[![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](#)
 [![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)](#)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](#)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](#)
 [![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](#)
+[![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white)](#)
 
 *Replacing fragmented legacy emergency response protocols with a unified digital triage system.*
 
@@ -116,19 +121,19 @@ sequenceDiagram
     Patient->>Gateway: Trigger SOS (GPS Coordinates & Profile ID)
     Gateway->>Emergency: Route Triage Request
     
-    rect rgb(240, 248, 255)
+    rect rgba(128, 128, 128, 0.15)
     Note over Emergency,RecordsSvc: Data Enrichment Phase
     Emergency->>RecordsSvc: Fetch Patient Medical Profile
     RecordsSvc-->>Emergency: Return Profile (Allergies, Blood Type)
     end
     
-    rect rgb(255, 240, 245)
+    rect rgba(128, 128, 128, 0.15)
     Note over Emergency,Dispatch: Algorithmic Routing Phase
     Emergency->>Emergency: Calculate Nearest Capable Hospital (Haversine)
     Emergency->>Dispatch: Request Unit/Bed Allocation
     end
     
-    rect rgb(240, 255, 240)
+    rect rgba(128, 128, 128, 0.15)
     Note over Dispatch,Hospital: Dispatch & Allocation Phase
     Dispatch->>Hospital: Push High-Priority Alert (WebSockets)
     Hospital-->>Dispatch: Acknowledge & Allocate Bed
@@ -239,11 +244,14 @@ npm install
 ```
 
 ### 2. Environment Configuration
-Create a `.env` file in the respective service and application directories. The primary variables required are:
+Create `.env` files in `apps/web-app`, `apps/hospital-dashboard`, and all folders within `services/`. The complete set of required environment variables for a local run is:
 
 ```env
+# Supabase PostgreSQL connection strings (Pooling & Direct)
 DATABASE_URL="postgresql://[USER]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
 DIRECT_URL="postgresql://[USER]:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+
+# SMTP Configuration for Stateless OTP Authentication
 GMAIL_USER="your.email@gmail.com"
 GMAIL_APP_PASSWORD="your-app-password"
 ```
